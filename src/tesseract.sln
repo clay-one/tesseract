@@ -4,10 +4,18 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 VisualStudioVersion = 12.0.0.0
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ApiModel", "ApiModel\ApiModel.csproj", "{E2B63755-ADA3-42A6-B0BC-992F5D501A22}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Client", "Client\Client.csproj", "{B1878CDE-D825-4BBD-B44A-437D0017D613}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "Common\Common.csproj", "{702A6D7A-20D2-4475-9EED-C6ED8735BA16}"
+EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E2B63755-ADA3-42A6-B0BC-992F5D501A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E2B63755-ADA3-42A6-B0BC-992F5D501A22}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B1878CDE-D825-4BBD-B44A-437D0017D613}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B1878CDE-D825-4BBD-B44A-437D0017D613}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{702A6D7A-20D2-4475-9EED-C6ED8735BA16}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{702A6D7A-20D2-4475-9EED-C6ED8735BA16}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

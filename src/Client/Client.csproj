@@ -1,0 +1,17 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <AssemblyName>Tesseract.Client</AssemblyName>
+    <RootNamespace>Tesseract.Client</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiModel\ApiModel.csproj">
+      <Project>{E2B63755-ADA3-42A6-B0BC-992F5D501A22}</Project>
+      <Name>ApiModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{702A6D7A-20D2-4475-9EED-C6ED8735BA16}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
