@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Results;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage.Model;
 

@@ -2,6 +2,8 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
 using Tesseract.Core.Job.Runner;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;

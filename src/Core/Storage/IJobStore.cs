@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Tesseract.Core.Storage.Model;
+using Tesseract.Common.ComposerImposter;
 
 namespace Tesseract.Core.Storage
 {

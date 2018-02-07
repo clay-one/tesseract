@@ -1,4 +1,6 @@
-﻿using Tesseract.Core.Storage.Model;
+﻿using MongoDB.Driver;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Connection
 {

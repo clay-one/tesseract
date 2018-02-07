@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using MongoDB.Driver;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
 using Tesseract.Core.Connection;
 using Tesseract.Core.Storage.Model;
 

@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MoreLinq;
+using ServiceStack;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Index;
 using Tesseract.Core.JobTypes.Base;
 using Tesseract.Core.Queue;

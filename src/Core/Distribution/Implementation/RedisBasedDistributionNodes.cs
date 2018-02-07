@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
 
 namespace Tesseract.Core.Distribution.Implementation
 {

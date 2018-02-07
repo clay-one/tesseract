@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Context;
 using Tesseract.Core.Storage.Model;
 

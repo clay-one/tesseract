@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ServiceStack;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Connection;
 
 namespace Tesseract.Core.Queue.Implementation

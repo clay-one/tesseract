@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using log4net;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;

@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
 
 namespace Tesseract.Core.Job.Implementation
 {

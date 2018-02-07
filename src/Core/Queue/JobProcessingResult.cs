@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Tesseract.Common.Extensions;
 
 namespace Tesseract.Core.Queue
 {

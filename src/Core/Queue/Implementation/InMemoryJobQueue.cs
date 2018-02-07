@@ -2,6 +2,8 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
 
 namespace Tesseract.Core.Queue.Implementation
 {

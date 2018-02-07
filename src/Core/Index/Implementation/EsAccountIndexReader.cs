@@ -1,5 +1,14 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
+using log4net;
+using Nest;
+using Tesseract.ApiModel.General;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Results;
+using Tesseract.Common.Text;
 using Tesseract.Core.Connection;
 using Tesseract.Core.Index.Model;
 
@@ -9,7 +18,7 @@ namespace Tesseract.Core.Index.Implementation
     public class EsAccountIndexReader : IAccountIndexReader
     {
         private static readonly ILog Log =
-            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
 
         [ComponentPlug]
         public IEsManager EsManager { get; set; }
@@ -26,11 +35,11 @@ namespace Tesseract.Core.Index.Implementation
             );
 
             LogAndThrowIfNotValid(countResult);
-            
+
             return countResult.Count;
         }
 
-        public async Task<AccountQueryResultPage> List(string tenantId, AccountQuery query, 
+        public async Task<AccountQueryResultPage> List(string tenantId, AccountQuery query,
             int count, string continueFrom)
         {
             var decodedContinueFrom = DecodeContinueFrom(continueFrom);
@@ -46,7 +55,7 @@ namespace Tesseract.Core.Index.Implementation
             );
 
             LogAndThrowIfNotValid(searchResult);
-            
+
             var result = new AccountQueryResultPage
             {
                 AccountIds = searchResult.Hits.Select(h => h.Id).Take(count).ToList(),
@@ -54,14 +63,12 @@ namespace Tesseract.Core.Index.Implementation
             };
 
             if (searchResult.Hits.Count > count)
-            {
                 result.ContinueWith = EncodeContinueWith(searchResult.Hits.Reverse().Skip(1).First().Sorts.ToArray());
-            }
 
             return result;
         }
 
-        public async Task<AccountQueryScrollPage> StartScroll(string tenantId, AccountQuery query, int count, 
+        public async Task<AccountQueryScrollPage> StartScroll(string tenantId, AccountQuery query, int count,
             int timeoutSeconds, int sliceCount, int sliceId)
         {
             var scrollResult = await EsManager.Client.SearchAsync<AccountIndexModel>(s => s
@@ -105,15 +112,15 @@ namespace Tesseract.Core.Index.Implementation
         public async Task<ApiValidationResult> TerminateScroll(string scrollId)
         {
             var response = await EsManager.Client.ClearScrollAsync(s => s.ScrollId(scrollId));
-            
+
             LogAndThrowIfNotValid(response);
             return ApiValidationResult.Ok();
         }
 
-        private string EncodeContinueWith(object[] lastSorts)
+        private string EncodeContinueWith(IReadOnlyList<object> lastSorts)
         {
-            var encodedCreationTime = Base32.ToString(BitConverter.GetBytes((long)lastSorts[0]));
-            return $"{encodedCreationTime},{(string)lastSorts[1]}";
+            var encodedCreationTime = Base32.ToString(BitConverter.GetBytes((long) lastSorts[0]));
+            return $"{encodedCreationTime},{(string) lastSorts[1]}";
         }
 
         private object[] DecodeContinueFrom(string continueFrom)
@@ -145,9 +152,9 @@ namespace Tesseract.Core.Index.Implementation
         {
             if (response.IsValid)
                 return;
-            
+
             Log.Error(response.DebugInformation);
             throw new InvalidOperationException("Invalid response returned from Elasticsearch");
-        }        
+        }
     }
 }

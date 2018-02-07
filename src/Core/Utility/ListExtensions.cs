@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Tesseract.Common.Utils;
 
 namespace Tesseract.Core.Utility
 {

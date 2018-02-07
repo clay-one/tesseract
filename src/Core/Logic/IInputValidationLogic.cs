@@ -1,4 +1,7 @@
 ﻿using System.Collections.Generic;
+using Tesseract.ApiModel.General;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Logic
 {

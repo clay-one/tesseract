@@ -2,6 +2,7 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;

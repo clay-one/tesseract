@@ -1,5 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tesseract.ApiModel.Fields;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage

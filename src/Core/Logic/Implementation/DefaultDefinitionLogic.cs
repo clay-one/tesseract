@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using Tesseract.ApiModel.Fields;
+using Tesseract.ApiModel.Tags;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Connection;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;

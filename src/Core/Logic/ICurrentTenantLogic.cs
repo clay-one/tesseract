@@ -1,4 +1,5 @@
 ﻿using System.Threading.Tasks;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic

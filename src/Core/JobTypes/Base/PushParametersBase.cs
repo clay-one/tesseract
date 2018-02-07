@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Tesseract.ApiModel.General;
 
 namespace Tesseract.Core.JobTypes.Base
 {

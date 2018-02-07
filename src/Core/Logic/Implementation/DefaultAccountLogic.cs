@@ -1,4 +1,9 @@
-﻿using System.Threading.Tasks;
+﻿using System.Linq;
+using System.Threading.Tasks;
+using Tesseract.ApiModel.Accounts;
+using Tesseract.ApiModel.General;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;

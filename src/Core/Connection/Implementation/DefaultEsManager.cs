@@ -2,6 +2,9 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using Elasticsearch.Net;
+using Nest;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Index;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage;
@@ -22,7 +25,7 @@ namespace Tesseract.Core.Connection.Implementation
 
         [ConfigurationPoint("elasticsearch.indexNamePrefix")]
         public string IndexNamePrefix { get; set; }
-        
+
         #region Initialization
 
         [OnCompositionComplete]
@@ -39,6 +42,7 @@ namespace Tesseract.Core.Connection.Implementation
                             var reqBody = Encoding.Default.GetString(h.RequestBodyInBytes);
                             Debug.WriteLine($"REQUEST:\n{reqBody}");
                         }
+
 //                        if (h.ResponseBodyInBytes != null)
 //                            Debug.WriteLine($"RESPONSE:\n{Encoding.Default.GetString(h.ResponseBodyInBytes)}");
                     })
@@ -62,7 +66,7 @@ namespace Tesseract.Core.Connection.Implementation
         {
             return tenantId == null ? IndexNamePrefix : IndexNamePrefix + "_" + tenantId;
         }
-        
+
         public async Task DeleteTenantIndex(string tenantId)
         {
             var exists = await Client.IndexExistsAsync(GetTenantIndexName(tenantId));
@@ -74,7 +78,7 @@ namespace Tesseract.Core.Connection.Implementation
 
         public async Task CreateTenantIndex(string tenantId)
         {
-            var properties = new Nest.Properties
+            var properties = new Properties
             {
                 [IndexNaming.AccountIdFieldName] = new KeywordProperty(),
                 [IndexNaming.CreationTimeFieldName] = new NumberProperty(NumberType.Integer)
@@ -109,41 +113,51 @@ namespace Tesseract.Core.Connection.Implementation
 
             var nsList = await TagNsDefinitionStore.LoadAll(tenantId);
             foreach (var ns in nsList)
-            {
-                if (!mappings.Mapping.Properties.ContainsKey(IndexNaming.Namespace(ns.Namespace)))
+                /*
+                     * Kia:
+                     * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
+                     * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
+                     * hence the deletion of `.Properties` expression.
+                     */
+                if (!mappings.Indices.ContainsKey(IndexNaming.Namespace(ns.Namespace)))
                     await SetTagNsMapping(tenantId, ns.Namespace);
-            }
 
             var fieldList = await FieldDefinitionStore.LoadAll(tenantId);
             foreach (var field in fieldList)
-            {
-                if (!mappings.Mapping.Properties.ContainsKey(IndexNaming.Field(field.FieldName)))
-                    await SetFieldMapping(tenantId, field.FieldName);
-            }
-        }
-
-        public async Task SetTagNsMapping(string tenantId, string ns)
-        {
-            await Client.MapAsync(new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
-            {
-                Properties = new Nest.Properties
-                {
-                    [IndexNaming.Namespace(ns)] = new TextProperty {Analyzer = "whitespace"}
+                /*
+                     * Kia:
+                     * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
+                     * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
+                     * hence the deletion of `.Properties` expression.
+                     */
+                    if (!mappings.Indices.ContainsKey(IndexNaming.Field(field.FieldName)))
+                        await SetFieldMapping(tenantId, field.FieldName);
                 }
-            });
-        }
 
-        public async Task SetFieldMapping(string tenantId, string fieldName)
-        {
-            await Client.MapAsync(new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
-            {
-                Properties = new Nest.Properties
+                public async Task SetTagNsMapping(string tenantId, string ns)
                 {
-                    [IndexNaming.Field(fieldName)] = new NumberProperty(NumberType.Double)
+                    await Client.MapAsync(
+                        new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                        {
+                            Properties = new Properties
+                            {
+                                [IndexNaming.Namespace(ns)] = new TextProperty {Analyzer = "whitespace"}
+                            }
+                        });
                 }
-            });
-        }
 
-        #endregion
-    }
-}
+                public async Task SetFieldMapping(string tenantId, string fieldName)
+                {
+                    await Client.MapAsync(
+                        new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                        {
+                            Properties = new Properties
+                            {
+                                [IndexNaming.Field(fieldName)] = new NumberProperty(NumberType.Double)
+                            }
+                        });
+                }
+
+                #endregion
+                }
+                }

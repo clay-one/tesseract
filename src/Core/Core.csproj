@@ -4,4 +4,22 @@
     <AssemblyName>Tesseract.Core</AssemblyName>
     <RootNamespace>Tesseract.Core</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="log4net" Version="2.0.8" />
+    <PackageReference Include="MongoDB.Driver" Version="2.5.0" />
+    <PackageReference Include="morelinq" Version="2.10.0" />
+    <PackageReference Include="NEST" Version="6.0.0" />
+    <PackageReference Include="ServiceStack.Text" Version="5.0.2" />
+    <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiModel\ApiModel.csproj">
+      <Project>{E2B63755-ADA3-42A6-B0BC-992F5D501A22}</Project>
+      <Name>ApiModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{702A6D7A-20D2-4475-9EED-C6ED8735BA16}</Project>
+      <Name>Common</Name>
+    </ProjectReference>
+  </ItemGroup>
 </Project>

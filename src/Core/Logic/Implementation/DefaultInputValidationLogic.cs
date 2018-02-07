@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using Tesseract.ApiModel.General;
+using Tesseract.Common.ComposerImposter;
+using Tesseract.Common.Extensions;
+using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Logic.Implementation
 {

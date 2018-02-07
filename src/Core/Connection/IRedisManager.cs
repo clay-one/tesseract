@@ -1,4 +1,7 @@
-﻿namespace Tesseract.Core.Connection
+﻿using StackExchange.Redis;
+using Tesseract.Common.ComposerImposter;
+
+namespace Tesseract.Core.Connection
 {
     [Contract]
     public interface IRedisManager

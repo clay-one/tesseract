@@ -1,4 +1,6 @@
-﻿namespace Tesseract.Core.JobTypes.FetchFromIndex
+﻿using Tesseract.ApiModel.General;
+
+namespace Tesseract.Core.JobTypes.FetchFromIndex
 {
     public class FetchFromIndexParameters
     {

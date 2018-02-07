@@ -2,6 +2,10 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ServiceStack;
+using Tesseract.ApiModel.General;
+using Tesseract.ApiModel.Jobs;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Job;
 using Tesseract.Core.JobTypes.FetchAllForReindex;
 using Tesseract.Core.JobTypes.FetchFromIndex;

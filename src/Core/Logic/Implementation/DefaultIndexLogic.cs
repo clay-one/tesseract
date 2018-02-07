@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Tesseract.ApiModel.General;
+using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Index;
 
 namespace Tesseract.Core.Logic.Implementation
