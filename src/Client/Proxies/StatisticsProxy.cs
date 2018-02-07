@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Net.Http;
 using System.Threading.Tasks;
+using Tesseract.ApiModel.Statistics;
+using Tesseract.Common.Extensions;
+using Tesseract.Common.Results;
 
 namespace Tesseract.Client.Proxies
 {

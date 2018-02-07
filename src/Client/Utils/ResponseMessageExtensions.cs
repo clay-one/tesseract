@@ -2,6 +2,9 @@
 using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
+using ServiceStack.Text;
+using Tesseract.Common.Extensions;
+using Tesseract.Common.Results;
 
 namespace Tesseract.Client.Utils
 {

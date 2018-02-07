@@ -1,4 +1,7 @@
-﻿namespace Tesseract.Client.Utils
+﻿using System.Linq;
+using Tesseract.Common.Results;
+
+namespace Tesseract.Client.Utils
 {
     public static class ApiValidationResultExtensions
     {
@@ -7,7 +10,8 @@
             if (result.Success)
                 return "OK";
 
-            return $"Failure with {result.Errors.Count} errors: {string.Join("; ", result.Errors.Select(e => e.ToDebugMessage()))}";
+            return
+                $"Failure with {result.Errors.Count} errors: {string.Join("; ", result.Errors.Select(e => e.ToDebugMessage()))}";
         }
 
         public static string ToDebugMessage(this ApiValidationError error)

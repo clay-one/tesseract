@@ -1,0 +1,21 @@
+﻿using System.Threading.Tasks;
+using Tesseract.Core.Storage.Model;
+
+namespace Tesseract.Core.Logic
+{
+    [Contract]
+    public interface ICurrentTenantLogic
+    {
+        void InitializeInfo(IOwinRequest contextRequest);
+        Task PopulateInfo();
+
+        string Id { get; }
+        string None { get; }
+
+        bool DoesTagNsExist(string ns);
+        TagNsDefinitionData GetTagNsDefinition(string ns);
+
+        bool DoesFieldExist(string fieldName);
+        FieldDefinitionData GetFieldDefinition(string fieldName);
+    }
+}
