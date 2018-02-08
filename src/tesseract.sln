@@ -16,6 +16,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.Core", "Worker.Core\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.Windows", "Worker.Windows\Worker.Windows.csproj", "{A526DBA2-E767-44C1-BC31-957F5180CB36}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A1F3C2FC-09CE-4051-AEF4-7E9245CCA628}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "Core.Tests\Core.Tests.csproj", "{8F9A717F-B93F-4D02-AB85-57943E2E4EE7}"
+EndProject
 Global
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
 		{E2B63755-ADA3-42A6-B0BC-992F5D501A22}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -30,6 +34,8 @@ Global
 		{A415C348-8F11-4F4E-AF30-4022DFED322F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A526DBA2-E767-44C1-BC31-957F5180CB36}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A526DBA2-E767-44C1-BC31-957F5180CB36}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F9A717F-B93F-4D02-AB85-57943E2E4EE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F9A717F-B93F-4D02-AB85-57943E2E4EE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,5 +43,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{A415C348-8F11-4F4E-AF30-4022DFED322F} = {194284BE-A65A-4FBF-8CC5-4FA55E3E8AB6}
 		{A526DBA2-E767-44C1-BC31-957F5180CB36} = {194284BE-A65A-4FBF-8CC5-4FA55E3E8AB6}
+		{8F9A717F-B93F-4D02-AB85-57943E2E4EE7} = {A1F3C2FC-09CE-4051-AEF4-7E9245CCA628}
 	EndGlobalSection
 EndGlobal
