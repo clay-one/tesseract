@@ -8,6 +8,14 @@ namespace Tesseract.Client
     {
         private readonly TesseractProxyInternalData _internalData;
 
+        public TesseractClientSettings Settings => _internalData.Settings;
+
+        public AccountsProxy Accounts { get; private set; }
+        public TagsProxy Tags { get; private set; }
+        public FieldsProxy Fields { get; private set; }
+        public StatisticsProxy Statistics { get; private set; }
+        public JobsProxy Jobs { get; private set; }
+
         #region Initialization
 
         public TesseractClient()
@@ -52,13 +60,5 @@ namespace Tesseract.Client
         }
 
         #endregion
-
-        public TesseractClientSettings Settings => _internalData.Settings;
-
-        public AccountsProxy Accounts { get; private set; }
-        public TagsProxy Tags { get; private set; }
-        public FieldsProxy Fields { get; private set; }
-        public StatisticsProxy Statistics { get; private set; }
-        public JobsProxy Jobs { get; private set; }
     }
 }

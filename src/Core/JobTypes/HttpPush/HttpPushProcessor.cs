@@ -21,14 +21,14 @@ namespace Tesseract.Core.JobTypes.HttpPush
     [ComponentCache(null)]
     public class HttpPushProcessor : IJobProcessor<HttpPushStep>
     {
-        private HttpPushParameters _parameters;
         private HttpClient _client;
-        private string _tenantId;
         private string _jobId;
+        private HttpPushParameters _parameters;
+        private string _tenantId;
 
         [ComponentPlug]
         public IJobQueue<PushStepBase> PushQueue { get; set; }
-        
+
         [ComponentPlug]
         public IAccountStore AccountStore { get; set; }
 
@@ -37,10 +37,12 @@ namespace Tesseract.Core.JobTypes.HttpPush
             _tenantId = jobData.TenantId;
             _jobId = jobData.JobId;
             _client = new HttpClient();
-            
+
             var parametersString = jobData.Configuration?.Parameters;
             if (!string.IsNullOrWhiteSpace(parametersString))
+            {
                 _parameters = parametersString.FromJson<HttpPushParameters>();
+            }
         }
 
 
@@ -48,6 +50,11 @@ namespace Tesseract.Core.JobTypes.HttpPush
         {
             return JobProcessingResult.Combine(
                 await Task.WhenAll(items.Select(ProcessOne).ToArray()));
+        }
+
+        public Task<long> GetTargetQueueLength()
+        {
+            return Task.FromResult(0L);
         }
 
         public async Task<JobProcessingResult> ProcessOne(HttpPushStep step)
@@ -59,33 +66,37 @@ namespace Tesseract.Core.JobTypes.HttpPush
                 {
                     await PushQueue.Enqueue(step, _jobId);
                     await Task.Delay(1000);
-                    
-                    return new JobProcessingResult { ItemsRequeued = 1 };
+
+                    return new JobProcessingResult {ItemsRequeued = 1};
                 }
             }
 
-            PushedAccountInfoBatch pushedObject = await PreparePushedObject(step.AccountIds);
-            
+            var pushedObject = await PreparePushedObject(step.AccountIds);
+
             var failureMessage = "";
             for (var i = 0; i <= _parameters.MaxInstantRetries; i++)
             {
                 failureMessage = await TrySendHttpRequest(pushedObject);
-                
+
                 if (failureMessage == null)
+                {
                     return new JobProcessingResult();
+                }
             }
-            
+
             // Instant retries are exhausted. Report failure, and re-queue if more retries are desired
-            
-            var result  = new JobProcessingResult();
+
+            var result = new JobProcessingResult();
             result.FailureMessages = new[] {failureMessage};
             result.ItemsFailed++;
-            
+
             step.LastAttemptTime = DateTime.UtcNow;
             step.NumberOfAttempts++;
 
             if (step.NumberOfAttempts > _parameters.MaxDelayedRetries)
+            {
                 return result;
+            }
 
             await PushQueue.Enqueue(step, _jobId);
             result.ItemsRequeued++;
@@ -112,7 +123,7 @@ namespace Tesseract.Core.JobTypes.HttpPush
 
         private PushedAccountInfo MapAccountInfo(AccountData data)
         {
-            var result = new PushedAccountInfo { AccountId = data.AccountId };
+            var result = new PushedAccountInfo {AccountId = data.AccountId};
 
             if (_parameters.TagWeightsToInclude.SafeAny())
             {
@@ -123,7 +134,7 @@ namespace Tesseract.Core.JobTypes.HttpPush
                     Weight = data.GetTagWeight(t.Ns, t.Tag)
                 }).ToList();
             }
-                    
+
             if (_parameters.FieldValuesToInclude.SafeAny())
             {
                 result.FieldValues = _parameters.FieldValuesToInclude.Select(f => new FieldNameWithValue
@@ -157,11 +168,6 @@ namespace Tesseract.Core.JobTypes.HttpPush
             {
                 return $"Exception: {e.Message}";
             }
-        }
-
-        public Task<long> GetTargetQueueLength()
-        {
-            return Task.FromResult(0L);
         }
     }
 }

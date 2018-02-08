@@ -47,35 +47,50 @@ namespace Tesseract.Common.Results
         public static ApiValidatedResult<T> Failure(ApiValidationError error)
         {
             if (error == null)
+            {
                 throw new ArgumentNullException(nameof(error));
+            }
+
             return new ApiValidatedResult<T>(error);
         }
 
         public static ApiValidatedResult<T> Failure(IEnumerable<ApiValidationError> errors)
         {
             if (errors == null)
+            {
                 throw new ArgumentNullException(nameof(errors));
+            }
+
             return new ApiValidatedResult<T>(errors);
         }
 
         public static ApiValidatedResult<T> Failure(string errorKey)
         {
             if (errorKey.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(errorKey));
+            }
+
             return Failure(new ApiValidationError(errorKey));
         }
 
         public static ApiValidatedResult<T> Failure(string errorKey, IEnumerable<string> errorParameters)
         {
             if (errorKey.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(errorKey));
+            }
+
             return Failure(new ApiValidationError(errorKey, errorParameters));
         }
 
         public static ApiValidatedResult<T> Failure(string propertyPath, string errorKey)
         {
             if (errorKey.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(errorKey));
+            }
+
             return Failure(new ApiValidationError(propertyPath, errorKey));
         }
 
@@ -83,14 +98,20 @@ namespace Tesseract.Common.Results
             IEnumerable<string> errorParameters)
         {
             if (errorKey.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(errorKey));
+            }
+
             return Failure(new ApiValidationError(propertyPath, errorKey, errorParameters));
         }
 
         public static ApiValidatedResult<T> Aggregate(params ApiValidationError[] errors)
         {
             if (errors == null)
+            {
                 return Ok();
+            }
+
             var result = new ApiValidatedResult<T>();
             errors.SafeForEach(e => result.Append(e));
             return result;
@@ -99,7 +120,10 @@ namespace Tesseract.Common.Results
         public static ApiValidatedResult<T> Aggregate(params ApiValidationResult[] results)
         {
             if (results == null)
+            {
                 return Ok();
+            }
+
             var result = new ApiValidatedResult<T>();
             results.SafeForEach(r => result.Append(r));
             return result;

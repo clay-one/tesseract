@@ -11,7 +11,6 @@ using Tesseract.Core.Storage;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-
     [Component]
     public class DefaultTaggingLogic : ITaggingLogic
     {
@@ -44,7 +43,7 @@ namespace Tesseract.Core.Logic.Implementation
             // ReSharper disable once CompareOfFloatsByEqualityOperator - we get zero as input and want to compare it to exact zero.
             if (weight <= 0d)
             {
-                await AccountStore.RemoveTags(Tenant.Id, accountId, new FqTag { Ns = ns, Tag = tag}.Yield());
+                await AccountStore.RemoveTags(Tenant.Id, accountId, new FqTag {Ns = ns, Tag = tag}.Yield());
             }
             else
             {

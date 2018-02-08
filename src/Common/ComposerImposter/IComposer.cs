@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 
 namespace Tesseract.Common.ComposerImposter
 {
@@ -6,5 +7,6 @@ namespace Tesseract.Common.ComposerImposter
     {
         T GetComponent<T>();
         Type GetComponent(Type t);
+        IEnumerable<T> GetAllComponents<T>();
     }
 }

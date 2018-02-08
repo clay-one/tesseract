@@ -10,7 +10,7 @@ namespace Tesseract.Core.Queue
         Task<long> GetQueueLength(string jobId = null);
         Task PurgeQueueContents(string jobId = null);
     }
-    
+
     [Contract]
     public interface IJobQueue<TItem> : IJobQueue where TItem : JobStepBase
     {

@@ -9,18 +9,18 @@ namespace Tesseract.Core.Context
 {
     public class TenantContextInfo
     {
+        public TenantContextInfo(string id)
+        {
+            Id = id;
+            Initialized = false;
+        }
+
         public bool Initialized { get; private set; }
 
         public string Id { get; }
 
         public ReadOnlyDictionary<string, TagNsDefinitionData> TagNsDefinitions { get; private set; }
         public ReadOnlyDictionary<string, FieldDefinitionData> FieldDefinitions { get; private set; }
-
-        public TenantContextInfo(string id)
-        {
-            Id = id;
-            Initialized = false;
-        }
 
         public async Task Initialize(IComposer composer)
         {

@@ -11,10 +11,10 @@ namespace Tesseract.Core.JobTypes.AccountIndexing
     {
         [ComponentPlug]
         public IJobManager JobManager { get; set; }
-        
+
         [ComponentPlug]
         public ICurrentTenantLogic Tenant { get; set; }
-        
+
         public async Task EnsureJobsDefined()
         {
             await JobManager.CreateNewJobOrUpdateDefinition<AccountIndexingStep>(

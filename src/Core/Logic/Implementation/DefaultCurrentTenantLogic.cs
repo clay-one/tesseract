@@ -61,7 +61,9 @@ namespace Tesseract.Core.Logic.Implementation
         {
             var info = OwinRequestScopeContext.Current?.OwinContext?.Get<TenantContextInfo>(TenantInfoContextKey);
             if (info == null)
+            {
                 throw new InvalidOperationException("Tenant info is not initialized on the owin context");
+            }
 
             return info;
         }
@@ -70,7 +72,10 @@ namespace Tesseract.Core.Logic.Implementation
         {
             var info = GetTenantInfo();
             if (!info.Initialized)
-                throw new InvalidOperationException("TenantContextInfo is not yet initialized / populated with the data.");
+            {
+                throw new InvalidOperationException(
+                    "TenantContextInfo is not yet initialized / populated with the data.");
+            }
 
             return info;
         }

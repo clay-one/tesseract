@@ -19,6 +19,5 @@ namespace Tesseract.Core.Storage.Model
         public string LastModifiedBy { get; set; }
 
         public bool KeepHistory { get; set; }
-
     }
 }

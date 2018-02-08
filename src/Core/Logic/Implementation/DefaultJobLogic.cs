@@ -24,10 +24,10 @@ namespace Tesseract.Core.Logic.Implementation
 
         [ComponentPlug]
         public IJobManager JobManager { get; set; }
-        
+
         [ComponentPlug]
         public IJobStore JobStore { get; set; }
-        
+
         [ComponentPlug]
         public IComposer Composer { get; set; }
 
@@ -48,7 +48,7 @@ namespace Tesseract.Core.Logic.Implementation
 
         public async Task<string> CreateReindexAllJob()
         {
-            var jobId = await JobManager.CreateNewJobOrUpdateDefinition<FetchForReindexStep>(Tenant.Id, 
+            var jobId = await JobManager.CreateNewJobOrUpdateDefinition<FetchForReindexStep>(Tenant.Id,
                 "reindex-all",
                 configuration: new JobConfigurationData
                 {
@@ -66,17 +66,17 @@ namespace Tesseract.Core.Logic.Implementation
                 RangeEnd = null,
                 LastAccountId = null
             };
-            
+
             await Composer.GetComponent<IJobQueue<FetchForReindexStep>>().Enqueue(initialStep, jobId);
 
             return jobId;
         }
 
-        public async Task<string> CreateFetchAccountsJob(AccountQuery query, PushBehaviorSpecification behavior, 
+        public async Task<string> CreateFetchAccountsJob(AccountQuery query, PushBehaviorSpecification behavior,
             string displayName, string targetJobId, long count)
         {
             var sliceCount = 5;
-            
+
             var parameters = new FetchFromIndexParameters
             {
                 TenantId = Tenant.Id,
@@ -85,31 +85,31 @@ namespace Tesseract.Core.Logic.Implementation
                 SliceCount = sliceCount,
                 MaxBatchSize = behavior?.MaxBatchSize ?? 1
             };
-            
+
             var jobId = await JobManager.CreateNewJobOrUpdateDefinition<FetchFromIndexStep>(Tenant.Id,
                 displayName,
                 configuration: new JobConfigurationData
                 {
                     MaxBatchSize = 1,
                     MaxConcurrentBatchesPerWorker = 2,
-                    
+
                     // Expire after a day, if not specified when
-                    ExpiresAt = DateTime.UtcNow.AddSeconds(behavior?.ExpireJobAfterSeconds ?? 24*60*60),
-                    
+                    ExpiresAt = DateTime.UtcNow.AddSeconds(behavior?.ExpireJobAfterSeconds ?? 24 * 60 * 60),
+
                     IdleSecondsToCompletion = 60,
                     MaxBlockedSecondsPerCycle = 60,
-                    
+
                     // Try to keep 10 seconds worth of items in queue, but
                     // at least 5k (to avoid small batches of processing and spinning) and
                     // at most 100k (to avoid too much memory usage in queue)
-                    MaxTargetQueueLength = Math.Max(5_000, Math.Min(100_000, 
-                        (int) ((behavior?.AccountBatchesPerSecond ?? 10_000d)*10))),
-                    
+                    MaxTargetQueueLength = Math.Max(5_000, Math.Min(100_000,
+                        (int) ((behavior?.AccountBatchesPerSecond ?? 10_000d) * 10))),
+
                     Parameters = parameters.ToJson()
                 });
 
             await JobManager.AddPredecessor(Tenant.Id, targetJobId, jobId);
-            
+
             var initialSteps = Enumerable.Range(0, sliceCount).Select(sliceId =>
                 new FetchFromIndexStep
                 {
@@ -122,22 +122,28 @@ namespace Tesseract.Core.Logic.Implementation
             return jobId;
         }
 
-        public async Task<string> CreatePushAccountsJob(PushBehaviorSpecification behavior, 
+        public async Task<string> CreatePushAccountsJob(PushBehaviorSpecification behavior,
             PushTargetSpecification target, string displayName, long estimatedCount)
         {
             if (target.Http != null)
+            {
                 return await CreateHttpPushAccountsJob(behavior, target.Http, displayName, estimatedCount);
+            }
 
             if (target.Kafka != null)
+            {
                 return await CreateKafkaPushAccountsJob(behavior, target.Kafka);
-            
+            }
+
             if (target.Redis != null)
+            {
                 return await CreateRedisPushAccountsJob(behavior, target.Redis);
+            }
 
             throw new InvalidOperationException("Unknown target type. All target fields are null.");
         }
-        
-        private async Task<string> CreateHttpPushAccountsJob(PushBehaviorSpecification behavior, 
+
+        private async Task<string> CreateHttpPushAccountsJob(PushBehaviorSpecification behavior,
             HttpPushTargetSpecification target, string displayName, long estimatedCount)
         {
             var parameters = new HttpPushParameters
@@ -150,7 +156,7 @@ namespace Tesseract.Core.Logic.Implementation
                 MaxDelayedRetries = target.MaxDelayedRetries ?? 0,
                 RetryDelaySeconds = target.RetryDelaySeconds ?? 0
             };
-            
+
             var jobId = await JobManager.CreateNewJobOrUpdateDefinition<HttpPushStep>(Tenant.Id,
                 displayName,
                 configuration: new JobConfigurationData
@@ -158,15 +164,15 @@ namespace Tesseract.Core.Logic.Implementation
                     MaxBatchSize = Math.Min(10, target.HttpConcurrencyLevel ?? 10),
                     MaxConcurrentBatchesPerWorker = target.HttpConcurrencyLevel ?? 50,
                     ThrottledItemsPerSecond = behavior?.AccountBatchesPerSecond,
-                    
+
                     // Half-a-second worth of burst
                     ThrottledMaxBurstSize = behavior?.AccountBatchesPerSecond != null
                         ? (int?) Math.Max(1, (int) (behavior.AccountBatchesPerSecond / 2d))
                         : null,
-                    
+
                     // Expire after a day, if not specified when
                     ExpiresAt = DateTime.UtcNow.AddSeconds(behavior?.ExpireJobAfterSeconds ?? 24 * 60 * 60),
-                    
+
                     IdleSecondsToCompletion = 60,
                     MaxBlockedSecondsPerCycle = 60,
                     Parameters = parameters.ToJson(),
@@ -181,7 +187,7 @@ namespace Tesseract.Core.Logic.Implementation
         {
             throw new NotImplementedException();
         }
-        
+
         private Task<string> CreateRedisPushAccountsJob(PushBehaviorSpecification behavior,
             RedisPushTargetSpecification target)
         {

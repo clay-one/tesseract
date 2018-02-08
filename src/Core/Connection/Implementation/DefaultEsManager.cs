@@ -43,14 +43,14 @@ namespace Tesseract.Core.Connection.Implementation
                             Debug.WriteLine($"REQUEST:\n{reqBody}");
                         }
 
-//                        if (h.ResponseBodyInBytes != null)
-//                            Debug.WriteLine($"RESPONSE:\n{Encoding.Default.GetString(h.ResponseBodyInBytes)}");
+                        //                        if (h.ResponseBodyInBytes != null)
+                        //                            Debug.WriteLine($"RESPONSE:\n{Encoding.Default.GetString(h.ResponseBodyInBytes)}");
                     })
                     .PrettyJson()
 #endif
                     .EnableHttpCompression()
                     .RequestTimeout(TimeSpan.FromSeconds(10))
-//                    .BasicAuthentication("elastic", "changeme")
+                //                    .BasicAuthentication("elastic", "changeme")
                 ;
 
             Client = new ElasticClient(settings);
@@ -71,7 +71,9 @@ namespace Tesseract.Core.Connection.Implementation
         {
             var exists = await Client.IndexExistsAsync(GetTenantIndexName(tenantId));
             if (!exists.Exists)
+            {
                 return;
+            }
 
             await Client.DeleteIndexAsync(GetTenantIndexName(tenantId));
         }
@@ -100,7 +102,9 @@ namespace Tesseract.Core.Connection.Implementation
         {
             var exists = await Client.IndexExistsAsync(GetTenantIndexName(tenantId));
             if (!exists.Exists)
+            {
                 await CreateTenantIndex(tenantId);
+            }
 
             await EnsureIndexTagNsAndFieldMappings(tenantId);
         }
@@ -119,8 +123,12 @@ namespace Tesseract.Core.Connection.Implementation
                      * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
                      * hence the deletion of `.Properties` expression.
                      */
+            {
                 if (!mappings.Indices.ContainsKey(IndexNaming.Namespace(ns.Namespace)))
+                {
                     await SetTagNsMapping(tenantId, ns.Namespace);
+                }
+            }
 
             var fieldList = await FieldDefinitionStore.LoadAll(tenantId);
             foreach (var field in fieldList)
@@ -130,34 +138,38 @@ namespace Tesseract.Core.Connection.Implementation
                      * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
                      * hence the deletion of `.Properties` expression.
                      */
-                    if (!mappings.Indices.ContainsKey(IndexNaming.Field(field.FieldName)))
-                        await SetFieldMapping(tenantId, field.FieldName);
-                }
-
-                public async Task SetTagNsMapping(string tenantId, string ns)
+            {
+                if (!mappings.Indices.ContainsKey(IndexNaming.Field(field.FieldName)))
                 {
-                    await Client.MapAsync(
-                        new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
-                        {
-                            Properties = new Properties
-                            {
-                                [IndexNaming.Namespace(ns)] = new TextProperty {Analyzer = "whitespace"}
-                            }
-                        });
+                    await SetFieldMapping(tenantId, field.FieldName);
                 }
+            }
+        }
 
-                public async Task SetFieldMapping(string tenantId, string fieldName)
+        public async Task SetTagNsMapping(string tenantId, string ns)
+        {
+            await Client.MapAsync(
+                new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
                 {
-                    await Client.MapAsync(
-                        new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
-                        {
-                            Properties = new Properties
-                            {
-                                [IndexNaming.Field(fieldName)] = new NumberProperty(NumberType.Double)
-                            }
-                        });
-                }
+                    Properties = new Properties
+                    {
+                        [IndexNaming.Namespace(ns)] = new TextProperty {Analyzer = "whitespace"}
+                    }
+                });
+        }
 
-                #endregion
-                }
-                }
+        public async Task SetFieldMapping(string tenantId, string fieldName)
+        {
+            await Client.MapAsync(
+                new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                {
+                    Properties = new Properties
+                    {
+                        [IndexNaming.Field(fieldName)] = new NumberProperty(NumberType.Double)
+                    }
+                });
+        }
+
+        #endregion
+    }
+}

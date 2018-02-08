@@ -29,17 +29,21 @@ namespace Tesseract.Core.JobTypes.AccountIndexing
         public async Task<JobProcessingResult> Process(List<AccountIndexingStep> items)
         {
             if (items == null || !items.Any())
+            {
                 return new JobProcessingResult();
+            }
 
             var nullCounts = await Task.WhenAll(items.GroupBy(i => i.TenantId).Select(async t =>
             {
                 var tenantId = t.Key;
-                
+
                 var data = await AccountStore.LoadAccounts(tenantId, t.Select(ti => ti.AccountId));
                 var indexModels = data.Where(d => d != null).Select(d => IndexMapper.MapAccountData(d)).ToList();
 
                 if (indexModels.Any())
+                {
                     await IndexWriter.Index(tenantId, indexModels);
+                }
 
                 return data.Count(d => d == null);
             }));

@@ -52,8 +52,10 @@ namespace Tesseract.Core.Queue.Implementation
         public async Task<IEnumerable<TItem>> DequeueBatch(int maxBatchSize, string jobId = null)
         {
             if (maxBatchSize < 1 || maxBatchSize > 10000)
+            {
                 throw new ArgumentException("MaxBatchSize is out of range");
-            
+            }
+
             var redisKey = GetRedisKey(jobId);
             var redisDb = RedisManager.GetDatabase();
             var tasks = Enumerable
@@ -62,7 +64,7 @@ namespace Tesseract.Core.Queue.Implementation
 
             var results = await Task.WhenAll(tasks);
             return results
-                .Select(r => (string)r)
+                .Select(r => (string) r)
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.FromJson<TItem>());
         }

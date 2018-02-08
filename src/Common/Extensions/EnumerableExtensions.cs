@@ -30,15 +30,23 @@ namespace Tesseract.Common.Extensions
         public static void ForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> action)
         {
             if (action == null)
+            {
                 throw new ArgumentNullException(nameof(action));
+            }
+
             foreach (var source1 in source)
+            {
                 action(source1);
+            }
         }
 
         public static bool SafeAny<TSource>(this IEnumerable<TSource> source, bool nullResult = false)
         {
             if (source == null)
+            {
                 return nullResult;
+            }
+
             return source.Any();
         }
 
@@ -46,7 +54,10 @@ namespace Tesseract.Common.Extensions
             bool nullResult = false)
         {
             if (source == null)
+            {
                 return nullResult;
+            }
+
             return source.Any(predicate);
         }
 
@@ -76,7 +87,10 @@ namespace Tesseract.Common.Extensions
         public static void SafeForEach<TSource>(this IEnumerable<TSource> source, Action<TSource> action)
         {
             if (source == null || action == null)
+            {
                 return;
+            }
+
             source.ForEach(action);
         }
     }

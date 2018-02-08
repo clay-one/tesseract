@@ -14,6 +14,7 @@ namespace Tesseract.Core.Index
 
         Task<AccountQueryScrollPage> StartScroll(string tenantId, AccountQuery accountQuery, int count,
             int timeoutSeconds, int sliceCount, int sliceId);
+
         Task<AccountQueryScrollPage> ContinueScroll(string scrollId, int timeoutSeconds);
         Task<ApiValidationResult> TerminateScroll(string scrollId);
     }

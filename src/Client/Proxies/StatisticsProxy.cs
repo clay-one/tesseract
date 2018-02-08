@@ -23,7 +23,9 @@ namespace Tesseract.Client.Proxies
             // GET	/tags/ns/:ns/accounts/count	-B, SAFE	Return number of accounts tagged in the specified namespace
 
             if (tagNs.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(tagNs));
+            }
 
             return await InternalSendRequest<GetTagNsAccountCountResponse>(
                 HttpMethod.Get, $"/api/tags/ns/{tagNs}/accounts/count");
@@ -34,23 +36,30 @@ namespace Tesseract.Client.Proxies
             // GET	/tags/ns/:ns/t/:t/accounts/count	-B, SAFE	Return number of accounts that include the specified tag
 
             if (tagNs.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(tagNs));
+            }
+
             if (tag.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(tag));
+            }
 
             return await InternalSendRequest<GetTagAccountCountResponse>(
                 HttpMethod.Get, $"/api/tags/ns/{tagNs}/t/{tag}/accounts/count");
         }
 
-        
+
         public async Task<ApiValidatedResult<GetAccountQueryResultCountResponse>> GetAccountQueryResultCount(
             GetAccountQueryResultCountRequest request)
         {
             if (request == null)
+            {
                 throw new ArgumentNullException(nameof(request));
+            }
 
             return await InternalSendRequest<GetAccountQueryResultCountResponse>(
                 HttpMethod.Post, "/api/accounts/query/count", request);
         }
-   }
+    }
 }

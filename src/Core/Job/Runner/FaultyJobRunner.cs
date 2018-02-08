@@ -16,12 +16,12 @@ namespace Tesseract.Core.Job.Runner
 
         [ComponentPlug]
         public IJobStore JobStore { get; set; }
-        
+
         public string TenantId { get; private set; }
         public string JobId { get; private set; }
         public bool IsProcessRunning => false;
         public bool IsProcessTerminated => true;
-        
+
         public void Initialize(JobData jobData)
         {
             TenantId = jobData.TenantId;
@@ -33,16 +33,20 @@ namespace Tesseract.Core.Job.Runner
         {
             // No need to re-start a faulty job, so returning "true". 
             // Just update the state and save the error, if not already done by some other worker.
-            
+
             var status = await JobStore.LoadStatus(TenantId, JobId);
             if (status.State >= JobState.Completed)
+            {
                 return true;
+            }
 
             if (!await JobStore.UpdateState(TenantId, JobId, status.State, JobState.Failed))
+            {
                 return true;
+            }
 
             await JobStore.AddException(TenantId, JobId, BuildErrorData());
-            
+
             return true;
         }
 
@@ -55,14 +59,14 @@ namespace Tesseract.Core.Job.Runner
         {
             _errorMessage = errorMessage;
             _exception = exception;
-            
+
             return this;
         }
 
         private JobStatusErrorData BuildErrorData()
         {
             // TODO: Add _exception information too
-             
+
             return new JobStatusErrorData
             {
                 ErrorMessage = _errorMessage,

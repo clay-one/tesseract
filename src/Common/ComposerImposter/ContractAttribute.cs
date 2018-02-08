@@ -2,8 +2,7 @@
 
 namespace Tesseract.Common.ComposerImposter
 {
-    public class ContractAttribute:Attribute
+    public class ContractAttribute : Attribute
     {
-        
     }
 }

@@ -7,11 +7,10 @@ namespace Tesseract.Core.Logic
     [Contract]
     public interface ICurrentTenantLogic
     {
-        void InitializeInfo(IOwinRequest contextRequest);
-        Task PopulateInfo();
-
         string Id { get; }
         string None { get; }
+        void InitializeInfo(IOwinRequest contextRequest);
+        Task PopulateInfo();
 
         bool DoesTagNsExist(string ns);
         TagNsDefinitionData GetTagNsDefinition(string ns);

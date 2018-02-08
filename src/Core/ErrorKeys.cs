@@ -4,7 +4,7 @@
     {
         public const string NotImplemented = "NOT_IMPLEMENTED";
         public const string UnknownInternalServerError = "UNKNOWN_INTERNAL_SERVER_ERROR";
-        
+
         public const string InputCanNotBeEmpty = "INPUT_CANNOT_BE_EMPTY";
         public const string DuplicateTagInstruction = "DUPLICATE_TAG_INSTRUCTION";
         public const string DuplicateFieldInstruction = "DUPLICATE_FIELD_INSTRUCTION";
@@ -40,6 +40,5 @@
         public const string InvalidJobAction = "INVALID_JOB_ACTION";
         public const string InvalidJobState = "INVALID_JOB_STATE";
         public const string JobActionHasPreprocessorDependency = "JOB_ACTION_HAS_PREPROCESSOR_DEPENDENCY";
-        
     }
 }

@@ -15,34 +15,41 @@ namespace Tesseract.Core.Job.Runner
     public class JobStatisticsCalculator
     {
         private const int SecondsBetweenFlushes = 4;
-        
-        private readonly IJobStore _jobStore;
 
-        private string _tenantId;
-        private string _jobId;
+        private readonly IJobStore _jobStore;
         private bool _initialized;
+        private string _jobId;
+        private long _lastDequeueAttemptTicks;
+        private long _lastFailTicks;
         private long _lastFlushTicks;
+        private long _lastHealthCheckTicks;
 
         private long _lastIterationStartedTicks;
-        private long _lastDequeueAttemptTicks;
-        private long _lastProcessStartedTicks;
         private long _lastProcessFinishedTicks;
-        private long _lastHealthCheckTicks;
-        private long _lastFailTicks;
-        
-        private long _unflushedItemsProcessed;
-        private long _unflushedProcessingTimeTakenMillis;
+        private long _lastProcessStartedTicks;
+
+        private string _tenantId;
         private long _unflushedItemsFailed;
-        private long _unflushedItemsRequeued;
         private long _unflushedItemsGeneratedForTargetQueue;
+
+        private long _unflushedItemsProcessed;
+        private long _unflushedItemsRequeued;
         private ConcurrentQueue<string> _unflushedProcessingErrorMessages;
+        private long _unflushedProcessingTimeTakenMillis;
+
+
+        [CompositionConstructor]
+        public JobStatisticsCalculator(IJobStore jobStore)
+        {
+            _jobStore = jobStore;
+        }
 
         private long LastFlushTicks => Interlocked.Read(ref _lastFlushTicks);
         private long TicksSinceLastFlush => DateTime.UtcNow.Ticks - LastFlushTicks;
 
         private long LastIterationStartedTicks => Interlocked.Read(ref _lastIterationStartedTicks);
         public long TicksSinceLastIteration => DateTime.UtcNow.Ticks - LastIterationStartedTicks;
-        
+
         private long LastDequeueAttemptTicks => Interlocked.Read(ref _lastDequeueAttemptTicks);
         private long LastProcessStartedTicks => Interlocked.Read(ref _lastProcessStartedTicks);
         private long LastProcessFinishedTicks => Interlocked.Read(ref _lastProcessFinishedTicks);
@@ -51,17 +58,12 @@ namespace Tesseract.Core.Job.Runner
 
         public long TicksBetweenLastProcessStartAndFinish => LastProcessFinishedTicks - LastProcessStartedTicks;
 
-        
-        [CompositionConstructor]
-        public JobStatisticsCalculator(IJobStore jobStore)
-        {
-            _jobStore = jobStore;
-        }
-
         public void Initialize(JobData jobData)
         {
             if (_initialized)
+            {
                 throw new InvalidOperationException("Already initialized");
+            }
 
             _initialized = true;
             _tenantId = jobData.TenantId;
@@ -73,7 +75,7 @@ namespace Tesseract.Core.Job.Runner
             _lastProcessFinishedTicks = DateTime.UtcNow.Ticks;
             _lastHealthCheckTicks = DateTime.UtcNow.Ticks;
             _lastFailTicks = 0;
-        
+
             _unflushedItemsProcessed = 0;
             _unflushedProcessingTimeTakenMillis = 0;
             _unflushedItemsFailed = 0;
@@ -104,14 +106,15 @@ namespace Tesseract.Core.Job.Runner
             Interlocked.Exchange(ref _lastDequeueAttemptTicks, DateTime.UtcNow.Ticks);
             FlushIfNecessary();
         }
-        
+
         public void ReportProcessStarted()
         {
             Interlocked.Exchange(ref _lastProcessStartedTicks, DateTime.UtcNow.Ticks);
             FlushIfNecessary();
         }
 
-        public void ReportProcessFinished(int itemsProcessed, TimeSpan elapsedTime, JobProcessingResult processingResult)
+        public void ReportProcessFinished(int itemsProcessed, TimeSpan elapsedTime,
+            JobProcessingResult processingResult)
         {
             Interlocked.Exchange(ref _lastProcessFinishedTicks, DateTime.UtcNow.Ticks);
 
@@ -120,14 +123,20 @@ namespace Tesseract.Core.Job.Runner
             Interlocked.Add(ref _unflushedItemsFailed, processingResult.ItemsFailed);
             Interlocked.Add(ref _unflushedItemsRequeued, processingResult.ItemsRequeued);
             Interlocked.Add(ref _unflushedItemsGeneratedForTargetQueue, processingResult.ItemsGeneratedForTargetQueue);
-            
+
             if (processingResult.ItemsFailed > 0)
+            {
                 Interlocked.Exchange(ref _lastFailTicks, DateTime.UtcNow.Ticks);
-            
+            }
+
             if (processingResult.FailureMessages != null)
+            {
                 foreach (var error in processingResult.FailureMessages)
+                {
                     _unflushedProcessingErrorMessages.Enqueue(error);
-            
+                }
+            }
+
             FlushIfNecessary();
         }
 
@@ -136,7 +145,7 @@ namespace Tesseract.Core.Job.Runner
             Interlocked.Exchange(ref _lastProcessFinishedTicks, DateTime.UtcNow.Ticks);
             FlushIfNecessary();
         }
-        
+
         public void ReportHealthCheckException(Exception exception)
         {
             ReportException(nameof(ReportHealthCheckException), exception);
@@ -164,7 +173,9 @@ namespace Tesseract.Core.Job.Runner
         {
             var message = $"{source}: {exception.Message}";
             if (exception.InnerException != null)
+            {
                 message += Environment.NewLine + exception.InnerException.Message;
+            }
 
             _jobStore.AddException(_tenantId, _jobId, new JobStatusErrorData
                 {
@@ -178,9 +189,9 @@ namespace Tesseract.Core.Job.Runner
         private void FlushInternal()
         {
             Interlocked.Exchange(ref _lastFlushTicks, DateTime.UtcNow.Ticks);
-            
+
             var lastFailTicks = LastFailTicks;
-            var lastFailTime = lastFailTicks == 0 ? (DateTime?)null : new DateTime(lastFailTicks);
+            var lastFailTime = lastFailTicks == 0 ? (DateTime?) null : new DateTime(lastFailTicks);
 
             var change = new JobStatusUpdateData
             {
@@ -204,19 +215,25 @@ namespace Tesseract.Core.Job.Runner
             {
                 var faults = new List<JobStatusErrorData>();
                 while (_unflushedProcessingErrorMessages.TryDequeue(out var message))
-                    faults.Add(new JobStatusErrorData { ErrorMessage = message, Timestamp = DateTime.UtcNow.Ticks});
+                {
+                    faults.Add(new JobStatusErrorData {ErrorMessage = message, Timestamp = DateTime.UtcNow.Ticks});
+                }
 
                 if (faults.Count > 0)
+                {
                     change.LastFailures = faults.ToArray();
+                }
             }
-            
+
             _jobStore.UpdateStatus(_tenantId, _jobId, change).GetAwaiter().GetResult();
         }
 
         private void FlushIfNecessary()
         {
             if (TicksSinceLastFlush > SecondsBetweenFlushes * TimeSpan.TicksPerSecond)
+            {
                 FlushInternal();
+            }
         }
 
         #endregion

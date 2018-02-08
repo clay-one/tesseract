@@ -7,15 +7,14 @@ namespace Tesseract.Core.Job
 {
     public interface IJobRunner
     {
-        void Initialize(JobData jobData);
-        Task<bool> CheckHealth();
-        void StopRunner();
-
         string JobId { get; }
         bool IsProcessRunning { get; }
         bool IsProcessTerminated { get; }
+        void Initialize(JobData jobData);
+        Task<bool> CheckHealth();
+        void StopRunner();
     }
-    
+
     [Contract]
     public interface IJobRunner<TJobStep> : IJobRunner where TJobStep : JobStepBase
     {

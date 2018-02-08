@@ -2,8 +2,7 @@
 
 namespace Tesseract.Common.ComposerImposter
 {
-    public class ComponentPlugAttribute:Attribute
+    public class ComponentPlugAttribute : Attribute
     {
-        
     }
 }

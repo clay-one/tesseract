@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tesseract.Core.Storage.Model;
 using Tesseract.Common.ComposerImposter;
+using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage
 {
@@ -11,10 +11,10 @@ namespace Tesseract.Core.Storage
         Task<List<JobData>> LoadAll(string tenantId);
         Task<JobData> Load(string tenantId, string jobId);
         Task<JobStatusData> LoadStatus(string tenantId, string jobId);
-        
+
         Task<JobData> LoadFromAnyTenant(string jobId);
         Task<List<string>> LoadAllRunnableIdsFromAnyTenant();
-        
+
         Task<JobData> AddOrUpdateDefinition(JobData jobData);
         Task<bool> UpdateState(string tenantId, string jobId, JobState? expectedState, JobState newState);
         Task UpdateStatus(string tenantId, string jobId, JobStatusUpdateData change);

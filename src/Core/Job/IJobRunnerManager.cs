@@ -8,10 +8,10 @@ namespace Tesseract.Core.Job
     {
         Task CheckStoreJobs();
         Task CheckHealthOfAllRunners();
-        
+
         Task CheckHealthOrCreateRunner(string jobId);
         void StopAllRunners();
-        
+
         bool IsJobRunnerActive(string jobId);
     }
 }

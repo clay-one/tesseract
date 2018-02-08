@@ -9,7 +9,7 @@ namespace Tesseract.Core.Job.Implementation
     public class RedisJobNotification : IJobNotification
     {
         private const string JobUpdatedChannelName = "job-updated";
-//        private Thread _targetThread;
+        //        private Thread _targetThread;
 
         [ComponentPlug]
         public IRedisManager RedisManager { get; set; }

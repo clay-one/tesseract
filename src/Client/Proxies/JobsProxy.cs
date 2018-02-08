@@ -23,7 +23,9 @@ namespace Tesseract.Client.Proxies
         public async Task<GetJobStatusResponse> GetJobStatus(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             var response = await GenericSendRequestAsync(HttpMethod.Get, $"/api/jobs/j/{jobId}");
             return await response.DeserializeAsync<GetJobStatusResponse>(true);
@@ -32,43 +34,53 @@ namespace Tesseract.Client.Proxies
         public async Task<ApiValidationResult> ResumeJob(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/jobs/j/{jobId}/actions/resume");
         }
-        
+
         public async Task<ApiValidationResult> PauseJob(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/jobs/j/{jobId}/actions/pause");
         }
-        
+
         public async Task<ApiValidationResult> DrainJob(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/jobs/j/{jobId}/actions/drain");
         }
-        
+
         public async Task<ApiValidationResult> StopJob(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/jobs/j/{jobId}/actions/stop");
         }
-        
+
         public async Task<ApiValidationResult> PurgeJobQueue(string jobId)
         {
             if (jobId.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(jobId));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/jobs/j/{jobId}/actions/purge-queue");
         }
-        
+
         public async Task<StartReindexingAllAccountsResponse> StartReindexingAllAccounts()
         {
             var response = await GenericSendRequestAsync(HttpMethod.Post, "/api/jobs/reindex/accounts/all");
@@ -79,7 +91,9 @@ namespace Tesseract.Client.Proxies
             StartPushingAllAccountsRequest request)
         {
             if (request == null)
+            {
                 throw new ArgumentNullException(nameof(request));
+            }
 
             var response = await GenericSendRequestAsync(HttpMethod.Post, "/api/jobs/push/accounts/all", request);
             return await response.DeserializeAsync<StartPushingAccountsResponse>();
@@ -89,35 +103,50 @@ namespace Tesseract.Client.Proxies
             string tagNs, StartPushingAccountsByTagNsRequest request)
         {
             if (tagNs.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(tagNs));
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            }
 
-            var response = await GenericSendRequestAsync(HttpMethod.Post, 
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var response = await GenericSendRequestAsync(HttpMethod.Post,
                 $"/api/jobs/push/accounts/by/tagns", request);
             return await response.DeserializeAsync<StartPushingAccountsResponse>();
         }
-        
+
         public async Task<StartPushingAccountsResponse> StartPushingAccountsByTag(
             string tagNs, string tag, StartPushingAccountsByTagRequest request)
         {
             if (tagNs.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(tagNs));
-            if (tag.IsNullOrWhitespace())
-                throw new ArgumentNullException(nameof(tag));
-            if (request == null)
-                throw new ArgumentNullException(nameof(request));
+            }
 
-            var response = await GenericSendRequestAsync(HttpMethod.Post, 
+            if (tag.IsNullOrWhitespace())
+            {
+                throw new ArgumentNullException(nameof(tag));
+            }
+
+            if (request == null)
+            {
+                throw new ArgumentNullException(nameof(request));
+            }
+
+            var response = await GenericSendRequestAsync(HttpMethod.Post,
                 $"/api/jobs/push/accounts/by/tag", request);
             return await response.DeserializeAsync<StartPushingAccountsResponse>();
         }
-        
+
         public async Task<StartPushingAccountsResponse> StartPushingAccountsByQuery(
             StartPushingAccountsByQueryRequest request)
         {
             if (request == null)
+            {
                 throw new ArgumentNullException(nameof(request));
+            }
 
             var response = await GenericSendRequestAsync(HttpMethod.Post, "/api/jobs/push/accounts/by/query", request);
             return await response.DeserializeAsync<StartPushingAccountsResponse>();

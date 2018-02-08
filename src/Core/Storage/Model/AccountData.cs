@@ -29,6 +29,5 @@ namespace Tesseract.Core.Storage.Model
 
         [BsonDictionaryOptions(DictionaryRepresentation.Document)]
         public Dictionary<string, double> Fields { get; set; }
-
     }
 }

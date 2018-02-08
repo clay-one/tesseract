@@ -7,9 +7,14 @@ namespace Tesseract.Common.Extensions
         public static void EnqueueAll<T>(this Queue<T> queue, IEnumerable<T> elements)
         {
             if (elements == null)
+            {
                 return;
-            foreach (T element in elements)
+            }
+
+            foreach (var element in elements)
+            {
                 queue.Enqueue(element);
+            }
         }
     }
 }

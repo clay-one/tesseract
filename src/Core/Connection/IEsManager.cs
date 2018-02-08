@@ -7,6 +7,7 @@ namespace Tesseract.Core.Connection
     [Contract]
     public interface IEsManager
     {
+        ElasticClient Client { get; }
         string GetTenantIndexName(string tenantId);
         Task DeleteTenantIndex(string tenantId);
         Task CreateTenantIndex(string tenantId);
@@ -15,7 +16,5 @@ namespace Tesseract.Core.Connection
 
         Task SetTagNsMapping(string tenantId, string ns);
         Task SetFieldMapping(string tenantId, string fieldName);
-
-        ElasticClient Client { get; }
     }
 }

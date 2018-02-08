@@ -7,7 +7,10 @@ namespace Tesseract.Common.Text
         public static byte[] ToBytes(string input)
         {
             if (string.IsNullOrEmpty(input))
+            {
                 throw new ArgumentNullException(nameof(input));
+            }
+
             input = input.TrimEnd('=');
             var length = input.Length * 5 / 8;
             var numArray = new byte[length];
@@ -34,14 +37,20 @@ namespace Tesseract.Common.Text
             }
 
             if (index != length)
+            {
                 numArray[index] = num1;
+            }
+
             return numArray;
         }
 
         public static string ToString(byte[] input)
         {
             if (input == null || input.Length == 0)
+            {
                 throw new ArgumentNullException(nameof(input));
+            }
+
             var length = (int) Math.Ceiling(input.Length / 5.0) * 8;
             var chArray1 = new char[length];
             byte b1 = 0;
@@ -70,7 +79,9 @@ namespace Tesseract.Common.Text
                 var num4 = (int) ValueToChar(b1);
                 chArray2[index] = (char) num4;
                 while (num3 != length)
+                {
                     chArray1[num3++] = '=';
+                }
             }
 
             return new string(chArray1);
@@ -80,20 +91,35 @@ namespace Tesseract.Common.Text
         {
             var num = (int) c;
             if (num < 91 && num > 64)
+            {
                 return num - 65;
+            }
+
             if (num < 56 && num > 49)
+            {
                 return num - 24;
+            }
+
             if (num < 123 && num > 96)
+            {
                 return num - 97;
+            }
+
             throw new ArgumentException("Character is not a Base32 character.", nameof(c));
         }
 
         private static char ValueToChar(byte b)
         {
             if (b < 26)
+            {
                 return (char) (b + 65U);
+            }
+
             if (b < 32)
+            {
                 return (char) (b + 24U);
+            }
+
             throw new ArgumentException("Byte is not a value Base32 value.", nameof(b));
         }
     }

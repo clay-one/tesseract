@@ -10,7 +10,7 @@ namespace Tesseract.Core.Index.Model
             get => AccountId;
             set => AccountId = value;
         }
-        
+
         public string AccountId
         {
             get

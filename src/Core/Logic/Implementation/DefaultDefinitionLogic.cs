@@ -38,7 +38,9 @@ namespace Tesseract.Core.Logic.Implementation
         {
             var currentDefinition = await TagNsDefinitionStore.Load(Tenant.Id, ns);
             if (currentDefinition == null)
+            {
                 await EsManager.SetTagNsMapping(Tenant.Id, ns);
+            }
 
             await TagNsDefinitionStore.AddOrUpdate(Tenant.Id, ns, request);
         }
@@ -57,7 +59,9 @@ namespace Tesseract.Core.Logic.Implementation
         {
             var currentDefinition = await FieldDefinitionStore.Load(Tenant.Id, fieldName);
             if (currentDefinition == null)
+            {
                 await EsManager.SetFieldMapping(Tenant.Id, fieldName);
+            }
 
             await FieldDefinitionStore.AddOrUpdate(Tenant.Id, fieldName, request);
         }

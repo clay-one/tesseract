@@ -27,7 +27,9 @@ namespace Tesseract.Client.Proxies
             // GET	/fields/f/:f	-B, SAFE	Get information about a field definition
 
             if (fieldName.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(fieldName));
+            }
 
             var response = await GenericSendRequestAsync(HttpMethod.Get, $"/api/fields/f/{fieldName}");
             return await response.DeserializeAsync<GetFieldDefinitionResponse>(true);
@@ -38,9 +40,14 @@ namespace Tesseract.Client.Proxies
             // PUT	/fields/f/:f	+B, IDMP	Define a new field, or update its parameters and settings
 
             if (request == null)
+            {
                 throw new ArgumentNullException(nameof(request));
+            }
+
             if (fieldName.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(fieldName));
+            }
 
             return await InternalSendRequest(HttpMethod.Put, $"/api/fields/f/{fieldName}", request);
         }

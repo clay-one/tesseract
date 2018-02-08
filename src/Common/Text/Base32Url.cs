@@ -50,7 +50,10 @@ namespace Tesseract.Common.Text
         public Base32Url(bool padding, bool caseSensitive, bool ignoreWhiteSpaceWhenDecoding, string alternateAlphabet)
         {
             if (alternateAlphabet.Length != 32)
+            {
                 throw new ArgumentException("Alphabet must be exactly 32 characters long for base 32 encoding.");
+            }
+
             PaddingChar = '=';
             UsePadding = padding;
             IsCaseSensitive = caseSensitive;
@@ -92,20 +95,29 @@ namespace Tesseract.Common.Text
             }
 
             if (UsePadding)
+            {
                 stringBuilder.Append(
                     string.Empty.PadRight(stringBuilder.Length % 8 == 0 ? 0 : 8 - stringBuilder.Length % 8,
                         PaddingChar));
+            }
+
             return stringBuilder.ToString();
         }
 
         public byte[] Decode(string input)
         {
             if (IgnoreWhiteSpaceWhenDecoding)
+            {
                 input = Regex.Replace(input, "\\s+", "");
+            }
+
             if (UsePadding)
             {
                 if (input.Length % 8 != 0)
+                {
                     throw new ArgumentException("Invalid length for a base32 string with padding.");
+                }
+
                 input = input.TrimEnd(PaddingChar);
             }
 
@@ -121,8 +133,11 @@ namespace Tesseract.Common.Text
                 {
                     uint num4;
                     if (!_index.TryGetValue(input.Substring(num1 + index, 1), out num4))
+                    {
                         throw new ArgumentException("Invalid character '" + input.Substring(num1 + index, 1) +
                                                     "' in base32 string, valid characters are: " + _alphabet);
+                    }
+
                     num3 |= (ulong) num4 << ((count + 1) * 8 - index * 5 - 5);
                 }
 
@@ -138,10 +153,14 @@ namespace Tesseract.Common.Text
         private void EnsureAlphabetIndexed()
         {
             if (_index != null)
+            {
                 return;
+            }
+
             var key = (IsCaseSensitive ? "S" : "I") + _alphabet;
             Dictionary<string, uint> dictionary;
             if (!Indexes.TryGetValue(key, out dictionary))
+            {
                 lock (Indexes)
                 {
                     if (!Indexes.TryGetValue(key, out dictionary))
@@ -151,10 +170,14 @@ namespace Tesseract.Common.Text
                                 ? StringComparer.InvariantCulture
                                 : StringComparer.InvariantCultureIgnoreCase);
                         for (var startIndex = 0; startIndex < _alphabet.Length; ++startIndex)
+                        {
                             dictionary[_alphabet.Substring(startIndex, 1)] = (uint) startIndex;
+                        }
+
                         Indexes.Add(key, dictionary);
                     }
                 }
+            }
 
             _index = dictionary;
         }

@@ -34,10 +34,13 @@ namespace Tesseract.Core.Storage.Implementation
             return await cursor.FirstOrDefaultAsync();
         }
 
-        public async Task<FieldDefinitionData> AddOrUpdate(string tenantId, string fieldName, PutFieldDefinitionRequest data)
+        public async Task<FieldDefinitionData> AddOrUpdate(string tenantId, string fieldName,
+            PutFieldDefinitionRequest data)
         {
             if (data == null)
+            {
                 throw new ArgumentNullException(nameof(data));
+            }
 
             var filter = Builders<FieldDefinitionData>.Filter.And(
                 Builders<FieldDefinitionData>.Filter.Eq(fdd => fdd.TenantId, tenantId),
@@ -54,7 +57,11 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(fdd => fdd.KeepHistory, data.KeepHistory);
 
             return await Mongo.FieldDefinitions.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<FieldDefinitionData> { IsUpsert = true, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<FieldDefinitionData>
+                {
+                    IsUpsert = true,
+                    ReturnDocument = ReturnDocument.After
+                });
         }
 
         public async Task<FieldDefinitionData> Remove(string tenantId, string fieldName)

@@ -14,7 +14,9 @@ namespace Tesseract.Core.Index.Implementation
         public AccountIndexModel MapAccountData(AccountData accountData)
         {
             if (accountData == null)
+            {
                 return null;
+            }
 
             var result = new AccountIndexModel
             {
@@ -25,15 +27,14 @@ namespace Tesseract.Core.Index.Implementation
             accountData.TagNamespaces.SafeForEach(nsPair =>
             {
                 if (nsPair.Value == null || nsPair.Value.Count < 1)
+                {
                     return;
+                }
 
                 result.SetTagNsText(nsPair.Key, BuildTagNsText(nsPair.Value.Keys));
             });
 
-            accountData.Fields.SafeForEach(fieldPair =>
-            {
-                result.SetFieldValue(fieldPair.Key, fieldPair.Value);
-            });
+            accountData.Fields.SafeForEach(fieldPair => { result.SetFieldValue(fieldPair.Key, fieldPair.Value); });
 
             return result;
         }
@@ -56,19 +57,23 @@ namespace Tesseract.Core.Index.Implementation
             foreach (var tag in tags.EmptyIfNull())
             {
                 if (string.IsNullOrWhiteSpace(tag))
+                {
                     continue;
+                }
 
                 var startIndex = 0;
                 while (startIndex < tag.Length)
                 {
                     var nextIndex = tag.IndexOf(':', startIndex);
                     if (nextIndex < 0)
+                    {
                         break;
+                    }
 
                     builder.Append(" ").Append(tag.Substring(0, nextIndex));
                     startIndex = nextIndex + 1;
                 }
-                
+
                 builder.Append(" ").Append(tag);
             }
 

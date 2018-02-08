@@ -63,7 +63,9 @@ namespace Tesseract.Core.Index.Implementation
             };
 
             if (searchResult.Hits.Count > count)
+            {
                 result.ContinueWith = EncodeContinueWith(searchResult.Hits.Reverse().Skip(1).First().Sorts.ToArray());
+            }
 
             return result;
         }
@@ -128,11 +130,15 @@ namespace Tesseract.Core.Index.Implementation
             try
             {
                 if (string.IsNullOrWhiteSpace(continueFrom))
+                {
                     return null;
+                }
 
                 var firstDashIndex = continueFrom.IndexOf(",", StringComparison.Ordinal);
                 if (firstDashIndex < 0)
+                {
                     return null;
+                }
 
                 var accountId = continueFrom.Substring(firstDashIndex + 1);
                 var encodedCreationTime = continueFrom.Substring(0, firstDashIndex);
@@ -151,7 +157,9 @@ namespace Tesseract.Core.Index.Implementation
         private void LogAndThrowIfNotValid(IResponse response)
         {
             if (response.IsValid)
+            {
                 return;
+            }
 
             Log.Error(response.DebugInformation);
             throw new InvalidOperationException("Invalid response returned from Elasticsearch");

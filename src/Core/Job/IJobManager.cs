@@ -11,12 +11,12 @@ namespace Tesseract.Core.Job
     {
         Task CleanupOldJobs();
 
-        Task<string> CreateNewJobOrUpdateDefinition<TJobStep>(string tenantId, 
-            string jobDisplayName = null, string jobId = null, JobConfigurationData configuration = null) 
+        Task<string> CreateNewJobOrUpdateDefinition<TJobStep>(string tenantId,
+            string jobDisplayName = null, string jobId = null, JobConfigurationData configuration = null)
             where TJobStep : JobStepBase;
 
         Task AddPredecessor(string tenantId, string jobId, string predecessorJobId);
-        
+
         Task StartJob(string tenantId, string jobId);
         Task StartJobIfNotStarted(string tenantId, string jobId);
         Task<ApiValidationResult> StopJob(string tenantId, string jobId);

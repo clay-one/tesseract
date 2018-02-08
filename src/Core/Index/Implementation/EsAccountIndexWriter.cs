@@ -17,7 +17,9 @@ namespace Tesseract.Core.Index.Implementation
         public async Task Index(string tenantId, List<AccountIndexModel> models)
         {
             if (!models.SafeAny())
+            {
                 return;
+            }
 
             await EsManager.Client.IndexManyAsync(models, EsManager.GetTenantIndexName(tenantId));
         }

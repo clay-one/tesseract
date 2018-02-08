@@ -15,7 +15,9 @@ namespace Tesseract.Core.Index.Implementation
         public QueryContainer BuildEsQuery(QueryContainer query, AccountQuery accountQuery)
         {
             if (accountQuery == null)
+            {
                 throw new ArgumentNullException(nameof(accountQuery));
+            }
 
             query = AddAllTagTermClauses(query, accountQuery.TaggedWithAll);
             query = AddAnyTagTermClauses(query, accountQuery.TaggedWithAny);
@@ -43,7 +45,7 @@ namespace Tesseract.Core.Index.Implementation
         {
             if (tags.SafeAny())
             {
-                BoolQuery innerQuery = new BoolQuery
+                var innerQuery = new BoolQuery
                 {
                     Should = tags.Select(t => (QueryContainer) new TermQuery
                     {
@@ -71,23 +73,29 @@ namespace Tesseract.Core.Index.Implementation
         private QueryContainer AddFieldRangeClauses(QueryContainer query, AccountFieldQuery accountFieldQuery)
         {
             if (accountFieldQuery == null)
+            {
                 return query;
+            }
 
             if (!accountFieldQuery.LowerBound.HasValue && !accountFieldQuery.UpperBound.HasValue)
             {
                 return query & new ExistsQuery {Field = IndexNaming.Field(accountFieldQuery.FieldName)};
             }
-                
+
             var innerQuery = new NumericRangeQuery
             {
                 Field = IndexNaming.Field(accountFieldQuery.FieldName)
             };
 
             if (accountFieldQuery.LowerBound.HasValue)
+            {
                 innerQuery.GreaterThanOrEqualTo = accountFieldQuery.LowerBound.Value;
+            }
 
             if (accountFieldQuery.UpperBound.HasValue)
+            {
                 innerQuery.LessThanOrEqualTo = accountFieldQuery.UpperBound.Value;
+            }
 
             return query & innerQuery;
         }
@@ -105,7 +113,9 @@ namespace Tesseract.Core.Index.Implementation
         private QueryContainer AddOrClauses(QueryContainer query, List<AccountQuery> accountQueries)
         {
             if (!accountQueries.SafeAny())
+            {
                 return query;
+            }
 
             var innerQueries = accountQueries
                 .Select(aq => BuildEsQuery(null, aq))
@@ -113,7 +123,9 @@ namespace Tesseract.Core.Index.Implementation
                 .ToList();
 
             if (innerQueries.Any())
+            {
                 return query & new BoolQuery {Should = innerQueries};
+            }
 
             return query;
         }
@@ -121,7 +133,9 @@ namespace Tesseract.Core.Index.Implementation
         private QueryContainer AddNotClause(QueryContainer query, AccountQuery accountQuery)
         {
             if (accountQuery == null)
+            {
                 return query;
+            }
 
             var innerQuery = BuildEsQuery(null, accountQuery);
             return query & !(innerQuery ?? new MatchAllQuery());

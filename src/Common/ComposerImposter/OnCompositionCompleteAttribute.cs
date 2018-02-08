@@ -2,8 +2,7 @@
 
 namespace Tesseract.Common.ComposerImposter
 {
-    public class OnCompositionCompleteAttribute:Attribute
+    public class OnCompositionCompleteAttribute : Attribute
     {
-        
     }
 }

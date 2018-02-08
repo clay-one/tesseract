@@ -13,8 +13,8 @@ namespace Tesseract.Core.Queue.Implementation
     [IgnoredOnAssemblyRegistration]
     public class InMemoryJobQueue<TItem> : IJobQueue<TItem> where TItem : JobStepBase
     {
-        private readonly Dictionary<string, Queue<TItem>> _queueContents;
         private readonly object _lockObject;
+        private readonly Dictionary<string, Queue<TItem>> _queueContents;
 
         public InMemoryJobQueue()
         {
@@ -31,7 +31,7 @@ namespace Tesseract.Core.Queue.Implementation
         {
             lock (_lockObject)
             {
-                return Task.FromResult((long)GetQueue(jobId).Count);
+                return Task.FromResult((long) GetQueue(jobId).Count);
             }
         }
 
@@ -88,9 +88,11 @@ namespace Tesseract.Core.Queue.Implementation
         [SuppressMessage("ReSharper", "InconsistentlySynchronizedField")]
         private Queue<TItem> GetQueue(string jobId)
         {
-            if (_queueContents.TryGetValue(jobId ?? "", out var queue)) 
+            if (_queueContents.TryGetValue(jobId ?? "", out var queue))
+            {
                 return queue;
-            
+            }
+
             queue = new Queue<TItem>();
             _queueContents[jobId ?? ""] = queue;
 

@@ -22,18 +22,24 @@ namespace Tesseract.Client
         protected void ThrowOnErrorIfRequired(HttpResponseMessage response)
         {
             if (_internalData.Settings.ThrowOnErrorStatusCode)
+            {
                 response.EnsureSuccessStatusCode();
+            }
         }
 
         protected async Task<HttpResponseMessage> GenericSendRequestAsync(HttpMethod method, string address,
             object request = null)
         {
             if (address.IsNullOrWhitespace())
+            {
                 throw new ArgumentNullException(nameof(address));
+            }
 
             var payload = new HttpRequestMessage(method, address);
             if (request != null)
+            {
                 payload.Content = new StringContent(request.ToJson(), Encoding.UTF8, "application/json");
+            }
 
             var response = await HttpClient.SendAsync(payload);
             ThrowOnErrorIfRequired(response);

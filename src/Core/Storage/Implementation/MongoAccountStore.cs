@@ -42,7 +42,9 @@ namespace Tesseract.Core.Storage.Implementation
         public async Task<AccountData> ChangeAccount(string tenantId, string accountId, PatchAccountRequest patch)
         {
             if (patch == null)
+            {
                 throw new ArgumentNullException(nameof(patch));
+            }
 
             var filter = Builders<AccountData>.Filter.And(
                 Builders<AccountData>.Filter.Eq(ai => ai.TenantId, tenantId),
@@ -68,10 +70,7 @@ namespace Tesseract.Core.Storage.Implementation
                 update = update.Inc(ai => ai.TagNamespaces[tp.TagNs][tp.Tag], tp.WeightDelta);
             });
 
-            patch.FieldChanges?.ForEach(fc =>
-            {
-                update = update.Set(ai => ai.Fields[fc.FieldName], fc.FieldValue);
-            });
+            patch.FieldChanges?.ForEach(fc => { update = update.Set(ai => ai.Fields[fc.FieldName], fc.FieldValue); });
 
             patch.FieldPatches?.ForEach(fp =>
             {
@@ -79,10 +78,11 @@ namespace Tesseract.Core.Storage.Implementation
             });
 
             return await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = true, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = true, ReturnDocument = ReturnDocument.After});
         }
 
-        public async Task<AccountData> SetTagWeightIfTagDoesntExist(string tenantId, string accountId, string ns, string tag, double weight)
+        public async Task<AccountData> SetTagWeightIfTagDoesntExist(string tenantId, string accountId, string ns,
+            string tag, double weight)
         {
             var filter = Builders<AccountData>.Filter.And(
                 Builders<AccountData>.Filter.Eq(ai => ai.TenantId, tenantId),
@@ -96,10 +96,11 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(ai => ai.TagNamespaces[ns][tag], weight);
 
             return await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = false, ReturnDocument = ReturnDocument.After});
         }
 
-        public async Task<AccountData> SetTagWeightIfAccountDoesntExist(string tenantId, string accountId, string ns, string tag, double weight)
+        public async Task<AccountData> SetTagWeightIfAccountDoesntExist(string tenantId, string accountId, string ns,
+            string tag, double weight)
         {
             var filter = Builders<AccountData>.Filter.And(
                 Builders<AccountData>.Filter.Eq(ai => ai.TenantId, tenantId),
@@ -116,13 +117,15 @@ namespace Tesseract.Core.Storage.Implementation
                 .SetOnInsert(ai => ai.TagNamespaces[ns][tag], weight);
 
             return await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = true, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = true, ReturnDocument = ReturnDocument.After});
         }
 
         public async Task<AccountData> RemoveTags(string tenantId, string accountId, IEnumerable<FqTag> fqTags)
         {
             if (fqTags == null)
+            {
                 throw new ArgumentNullException(nameof(fqTags));
+            }
 
             var filter = Builders<AccountData>.Filter.And(
                 Builders<AccountData>.Filter.Eq(ai => ai.TenantId, tenantId),
@@ -134,13 +137,10 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(ai => ai.LastModificationTime, DateTime.UtcNow)
                 .Set(ai => ai.HasFreshIndex, false);
 
-            fqTags.ForEach(t =>
-            {
-                update = update.Unset(ai => ai.TagNamespaces[t.Ns][t.Tag]);
-            });
+            fqTags.ForEach(t => { update = update.Unset(ai => ai.TagNamespaces[t.Ns][t.Tag]); });
 
             var result = await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = false, ReturnDocument = ReturnDocument.After});
 
             return result;
         }
@@ -159,7 +159,7 @@ namespace Tesseract.Core.Storage.Implementation
                 .Unset(ai => ai.TagNamespaces[ns]);
 
             return await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = false, ReturnDocument = ReturnDocument.After});
         }
 
         public async Task<AccountData> RemoveTagIfNotPositive(string tenantId, string accountId, string ns, string tag)
@@ -177,10 +177,10 @@ namespace Tesseract.Core.Storage.Implementation
                 .Unset(ai => ai.TagNamespaces[ns][tag]);
 
             return await Mongo.Accounts.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<AccountData> { IsUpsert = false, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<AccountData> {IsUpsert = false, ReturnDocument = ReturnDocument.After});
         }
 
-        public async Task<List<string>> FetchAccountIds(int batchSize, string tenantId, 
+        public async Task<List<string>> FetchAccountIds(int batchSize, string tenantId,
             string lowerBound, bool lowerBoundInclusive, string upperBound, bool upperBoundInclusive)
         {
             var filterItems = new List<FilterDefinition<AccountData>>
@@ -189,14 +189,18 @@ namespace Tesseract.Core.Storage.Implementation
             };
 
             if (!string.IsNullOrEmpty(lowerBound))
+            {
                 filterItems.Add(lowerBoundInclusive
                     ? Builders<AccountData>.Filter.Gte(ad => ad.AccountId, lowerBound)
                     : Builders<AccountData>.Filter.Gt(ad => ad.AccountId, lowerBound));
+            }
 
             if (!string.IsNullOrEmpty(upperBound))
+            {
                 filterItems.Add(upperBoundInclusive
                     ? Builders<AccountData>.Filter.Lte(ad => ad.AccountId, upperBound)
                     : Builders<AccountData>.Filter.Lt(ad => ad.AccountId, upperBound));
+            }
 
             var queryResult = await Mongo.Accounts.FindAsync(
                 Builders<AccountData>.Filter.And(filterItems),

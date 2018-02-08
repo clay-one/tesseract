@@ -37,7 +37,9 @@ namespace Tesseract.Core.Storage.Implementation
         public async Task<TagNsDefinitionData> AddOrUpdate(string tenantId, string ns, PutTagNsDefinitionRequest data)
         {
             if (data == null)
+            {
                 throw new ArgumentNullException(nameof(data));
+            }
 
             var filter = Builders<TagNsDefinitionData>.Filter.And(
                 Builders<TagNsDefinitionData>.Filter.Eq(nsdd => nsdd.TenantId, tenantId),
@@ -54,7 +56,11 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(nsdd => nsdd.KeepHistory, data.KeepHistory);
 
             return await Mongo.TagNsDefinitions.FindOneAndUpdateAsync(filter, update,
-                new FindOneAndUpdateOptions<TagNsDefinitionData> { IsUpsert = true, ReturnDocument = ReturnDocument.After });
+                new FindOneAndUpdateOptions<TagNsDefinitionData>
+                {
+                    IsUpsert = true,
+                    ReturnDocument = ReturnDocument.After
+                });
         }
 
         public async Task<TagNsDefinitionData> Remove(string tenantId, string ns)

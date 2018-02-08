@@ -2,8 +2,7 @@
 
 namespace Tesseract.Common.ComposerImposter
 {
-    public class IgnoredOnAssemblyRegistrationAttribute:Attribute
+    public class IgnoredOnAssemblyRegistrationAttribute : Attribute
     {
-        
     }
 }

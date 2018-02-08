@@ -11,26 +11,26 @@ namespace Tesseract.Common.Results
 
         public ApiValidationError(string errorKey)
         {
-            this.ErrorKey = errorKey;
+            ErrorKey = errorKey;
         }
 
         public ApiValidationError(string propertyPath, string errorKey)
         {
-            this.PropertyPath = propertyPath;
-            this.ErrorKey = errorKey;
+            PropertyPath = propertyPath;
+            ErrorKey = errorKey;
         }
 
         public ApiValidationError(string errorKey, IEnumerable<string> errorParameters)
         {
-            this.ErrorKey = errorKey;
-            this.ErrorParameters = errorParameters.SafeToList<string>((List<string>) null);
+            ErrorKey = errorKey;
+            ErrorParameters = errorParameters.SafeToList(null);
         }
 
         public ApiValidationError(string propertyPath, string errorKey, IEnumerable<string> errorParameters)
         {
-            this.PropertyPath = propertyPath;
-            this.ErrorKey = errorKey;
-            this.ErrorParameters = errorParameters.SafeToList<string>((List<string>) null);
+            PropertyPath = propertyPath;
+            ErrorKey = errorKey;
+            ErrorParameters = errorParameters.SafeToList(null);
         }
 
         public string PropertyPath { get; set; }

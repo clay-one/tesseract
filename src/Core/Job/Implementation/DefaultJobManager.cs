@@ -33,7 +33,10 @@ namespace Tesseract.Core.Job.Implementation
             where TJobStep : JobStepBase
         {
             if (string.IsNullOrWhiteSpace(jobId))
+            {
                 jobId = Base32Url.ToBase32String(Guid.NewGuid().ToByteArray());
+            }
+
             configuration = configuration ?? new JobConfigurationData();
 
             ValidateAndFixConfiguration(configuration);
@@ -85,13 +88,19 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 throw new InvalidOperationException($"JobId {jobId} does not exist.");
+            }
 
             if (jobData.Status.State != JobState.Initializing)
+            {
                 throw new InvalidOperationException($"JobId {jobId} cannot be started due to its state.");
+            }
 
             if (!await JobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress))
+            {
                 throw new InvalidOperationException($"JobId {jobId} could not be updated to start.");
+            }
 
             await JobNotification.NotifyJobUpdated(jobId);
         }
@@ -100,10 +109,14 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 throw new InvalidOperationException($"JobId {jobId} does not exist.");
+            }
 
             if (jobData.Status.State != JobState.Initializing)
+            {
                 return;
+            }
 
             await JobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress);
             await JobNotification.NotifyJobUpdated(jobId);
@@ -113,22 +126,32 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
+            }
 
             if (jobData.Status.State == JobState.Stopped)
+            {
                 return ApiValidationResult.Ok();
+            }
 
             if (jobData.Configuration.IsIndefinite)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobAction);
+            }
 
             if (jobData.Configuration.PreprocessorJobIds.SafeAny())
+            {
                 foreach (var preprocessorJobId in jobData.Configuration.PreprocessorJobIds)
                 {
                     var preprocessorJobStatus = await JobStore.LoadStatus(tenantId, preprocessorJobId);
                     if (preprocessorJobStatus.State < JobState.Completed)
+                    {
                         return ApiValidationResult.Failure(ErrorKeys.JobActionHasPreprocessorDependency,
                             new[] {preprocessorJobId});
+                    }
                 }
+            }
 
             var changeableStates = new[] {JobState.InProgress, JobState.Draining, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
@@ -140,7 +163,9 @@ namespace Tesseract.Core.Job.Implementation
 
                     var jobQueue = GetJobQueue(jobData.JobStepType);
                     if (jobQueue != null)
+                    {
                         await jobQueue.PurgeQueueContents(jobId);
+                    }
 
                     return ApiValidationResult.Ok();
                 }
@@ -153,10 +178,14 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
+            }
 
             if (jobData.Status.State == JobState.Paused)
+            {
                 return ApiValidationResult.Ok();
+            }
 
             var changeableStates = new[] {JobState.InProgress, JobState.Draining};
             if (changeableStates.Any(s => s == jobData.Status.State))
@@ -176,10 +205,14 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
+            }
 
             if (jobData.Status.State == JobState.Draining)
+            {
                 return ApiValidationResult.Ok();
+            }
 
             var changeableStates = new[] {JobState.InProgress, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
@@ -199,10 +232,14 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
+            }
 
             if (jobData.Status.State == JobState.InProgress)
+            {
                 return ApiValidationResult.Ok();
+            }
 
             var changeableStates = new[] {JobState.Draining, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
@@ -222,11 +259,15 @@ namespace Tesseract.Core.Job.Implementation
         {
             var jobData = await JobStore.Load(tenantId, jobId);
             if (jobData == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
+            }
 
             var jobQueue = GetJobQueue(jobData.JobStepType);
             if (jobQueue == null)
+            {
                 return ApiValidationResult.Failure(ErrorKeys.UnknownInternalServerError);
+            }
 
             await jobQueue.PurgeQueueContents(jobId);
             return ApiValidationResult.Ok();
@@ -247,40 +288,69 @@ namespace Tesseract.Core.Job.Implementation
                 Math.Max(1, Math.Min(10000, configuration.MaxConcurrentBatchesPerWorker));
 
             if (configuration.ThrottledItemsPerSecond.HasValue && configuration.ThrottledItemsPerSecond <= 0d)
+            {
                 throw new ArgumentException("Throttle speed cannot be zero or negative");
+            }
+
             if (configuration.ThrottledItemsPerSecond.HasValue)
+            {
                 configuration.ThrottledItemsPerSecond = Math.Max(0.001d, configuration.ThrottledItemsPerSecond.Value);
+            }
 
             if (configuration.ThrottledMaxBurstSize.HasValue && configuration.ThrottledMaxBurstSize <= 0)
+            {
                 throw new ArgumentException("Throttle burst size cannot be zero or negative");
+            }
+
             if (configuration.ThrottledMaxBurstSize.HasValue)
+            {
                 configuration.ThrottledMaxBurstSize = Math.Max(1, configuration.ThrottledMaxBurstSize.Value);
+            }
 
             if (configuration.ExpiresAt.HasValue && configuration.ExpiresAt < DateTime.Now)
+            {
                 throw new ArgumentException("Job is already expired and cannot be added");
+            }
 
             if (configuration.IdleSecondsToCompletion.HasValue)
+            {
                 configuration.IdleSecondsToCompletion = Math.Max(10, configuration.IdleSecondsToCompletion.Value);
+            }
 
             if (configuration.MaxBlockedSecondsPerCycle.HasValue)
+            {
                 configuration.MaxBlockedSecondsPerCycle = Math.Max(30, configuration.MaxBlockedSecondsPerCycle.Value);
+            }
 
             if (configuration.MaxTargetQueueLength.HasValue)
+            {
                 configuration.MaxTargetQueueLength = Math.Max(1, configuration.MaxTargetQueueLength.Value);
+            }
         }
 
         private IJobQueue GetJobQueue(string jobStepTypeName)
         {
             if (string.IsNullOrWhiteSpace(jobStepTypeName))
+            {
                 return null;
+            }
 
             var stepType = Type.GetType(jobStepTypeName);
-            if (stepType == null) return null;
+            if (stepType == null)
+            {
+                return null;
+            }
 
-            if (!stepType.IsSubclassOf(typeof(JobStepBase))) return null;
+            if (!stepType.IsSubclassOf(typeof(JobStepBase)))
+            {
+                return null;
+            }
 
             var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract) is IJobQueue jobQueue)) return null;
+            if (!(Composer.GetComponent(contract) is IJobQueue jobQueue))
+            {
+                return null;
+            }
 
             return jobQueue;
         }
