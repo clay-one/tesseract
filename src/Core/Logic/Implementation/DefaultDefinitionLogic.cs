@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Tesseract.ApiModel.Fields;
 using Tesseract.ApiModel.Tags;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Connection;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
@@ -37,10 +37,7 @@ namespace Tesseract.Core.Logic.Implementation
         public async Task AddOrUpdateTagNsDefinition(string ns, PutTagNsDefinitionRequest request)
         {
             var currentDefinition = await TagNsDefinitionStore.Load(Tenant.Id, ns);
-            if (currentDefinition == null)
-            {
-                await EsManager.SetTagNsMapping(Tenant.Id, ns);
-            }
+            if (currentDefinition == null) await EsManager.SetTagNsMapping(Tenant.Id, ns);
 
             await TagNsDefinitionStore.AddOrUpdate(Tenant.Id, ns, request);
         }
@@ -58,10 +55,7 @@ namespace Tesseract.Core.Logic.Implementation
         public async Task AddOrUpdateFieldDefinition(string fieldName, PutFieldDefinitionRequest request)
         {
             var currentDefinition = await FieldDefinitionStore.Load(Tenant.Id, fieldName);
-            if (currentDefinition == null)
-            {
-                await EsManager.SetFieldMapping(Tenant.Id, fieldName);
-            }
+            if (currentDefinition == null) await EsManager.SetFieldMapping(Tenant.Id, fieldName);
 
             await FieldDefinitionStore.AddOrUpdate(Tenant.Id, fieldName, request);
         }

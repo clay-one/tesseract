@@ -1,8 +1,8 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;
@@ -37,10 +37,8 @@ namespace Tesseract.Core.Logic.Implementation
             });
 
             if (removedTags.SafeAny())
-            {
                 accountInfo = await AccountStore.RemoveTags(Tenant.Id, accountId,
                     removedTags?.Select(t => new FqTag {Ns = t.TagNs, Tag = t.Tag}).ToList());
-            }
 
             await Task.WhenAll(maybeRemovedTags.EmptyIfNull().Select(async t =>
             {

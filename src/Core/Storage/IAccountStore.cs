@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage

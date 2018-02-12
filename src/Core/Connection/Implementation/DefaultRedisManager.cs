@@ -1,5 +1,5 @@
-﻿using StackExchange.Redis;
-using Tesseract.Common.ComposerImposter;
+﻿using ComposerCore.Attributes;
+using StackExchange.Redis;
 
 namespace Tesseract.Core.Connection.Implementation
 {

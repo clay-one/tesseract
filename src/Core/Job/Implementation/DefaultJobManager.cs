@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore;
+using ComposerCore.Attributes;
 using Tesseract.Common.Extensions;
 using Tesseract.Common.Results;
 using Tesseract.Common.Text;

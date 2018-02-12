@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ComposerCore;
+using ComposerCore.Attributes;
 using ServiceStack;
 using Tesseract.ApiModel.General;
 using Tesseract.ApiModel.Jobs;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Job;
 using Tesseract.Core.JobTypes.FetchAllForReindex;
 using Tesseract.Core.JobTypes.FetchFromIndex;
@@ -126,19 +127,11 @@ namespace Tesseract.Core.Logic.Implementation
             PushTargetSpecification target, string displayName, long estimatedCount)
         {
             if (target.Http != null)
-            {
                 return await CreateHttpPushAccountsJob(behavior, target.Http, displayName, estimatedCount);
-            }
 
-            if (target.Kafka != null)
-            {
-                return await CreateKafkaPushAccountsJob(behavior, target.Kafka);
-            }
+            if (target.Kafka != null) return await CreateKafkaPushAccountsJob(behavior, target.Kafka);
 
-            if (target.Redis != null)
-            {
-                return await CreateRedisPushAccountsJob(behavior, target.Redis);
-            }
+            if (target.Redis != null) return await CreateRedisPushAccountsJob(behavior, target.Redis);
 
             throw new InvalidOperationException("Unknown target type. All target fields are null.");
         }

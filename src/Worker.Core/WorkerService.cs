@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore;
+using ComposerCore.Implementation;
 using Tesseract.Core.Distribution;
 using Tesseract.Core.Job;
 
@@ -26,7 +27,7 @@ namespace Tesseract.Worker.Core
         private async Task StartAsync()
         {
             _composer = new ComponentContext();
-            _composer.ProcessApplicationConfiguration();
+            //_composer.ProcessApplicationConfiguration();
 
             // Make sure all static jobs are defined on the database
             foreach (var component in _composer.GetAllComponents<IStaticJob>())

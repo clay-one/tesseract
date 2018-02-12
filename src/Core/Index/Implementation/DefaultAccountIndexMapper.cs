@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore.Attributes;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage.Model;

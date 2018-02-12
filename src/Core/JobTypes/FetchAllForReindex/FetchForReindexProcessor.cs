@@ -2,8 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using log4net;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;

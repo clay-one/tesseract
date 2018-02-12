@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using ServiceStack.Text;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Connection;
 
 namespace Tesseract.Core.Job.Implementation

@@ -1,9 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;
@@ -42,11 +42,8 @@ namespace Tesseract.Core.Logic.Implementation
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator - we get zero as input and want to compare it to exact zero.
             if (weight <= 0d)
-            {
                 await AccountStore.RemoveTags(Tenant.Id, accountId, new FqTag {Ns = ns, Tag = tag}.Yield());
-            }
             else
-            {
                 await AccountStore.ChangeAccount(Tenant.Id, accountId, new PatchAccountRequest
                 {
                     TagChanges = new List<AccountTagChangeInstruction>
@@ -54,7 +51,6 @@ namespace Tesseract.Core.Logic.Implementation
                         new AccountTagChangeInstruction {TagNs = ns, Tag = tag, Weight = weight}
                     }
                 });
-            }
 
             await AccountIndexingQueue.Enqueue(new AccountIndexingStep
             {
@@ -68,7 +64,6 @@ namespace Tesseract.Core.Logic.Implementation
             await AccountStore.RemoveTagNs(Tenant.Id, accountId, ns);
 
             if (tags != null)
-            {
                 await AccountStore.ChangeAccount(Tenant.Id, accountId, new PatchAccountRequest
                 {
                     TagChanges = tags
@@ -76,7 +71,6 @@ namespace Tesseract.Core.Logic.Implementation
                         .Select(t => new AccountTagChangeInstruction {TagNs = ns, Tag = t.Key, Weight = t.Value})
                         .ToList()
                 });
-            }
 
             await AccountIndexingQueue.Enqueue(new AccountIndexingStep
             {

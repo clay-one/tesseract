@@ -1,4 +1,4 @@
-﻿using Tesseract.Common.ComposerImposter;
+﻿using ComposerCore.Attributes;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage.Model;
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore.Attributes;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Queue

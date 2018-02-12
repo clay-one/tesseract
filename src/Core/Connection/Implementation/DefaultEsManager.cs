@@ -2,9 +2,9 @@
 using System.Diagnostics;
 using System.Text;
 using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Elasticsearch.Net;
 using Nest;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Core.Index;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage;

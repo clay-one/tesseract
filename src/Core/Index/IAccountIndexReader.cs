@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Index

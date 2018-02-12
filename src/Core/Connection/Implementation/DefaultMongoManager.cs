@@ -1,5 +1,5 @@
-﻿using MongoDB.Driver;
-using Tesseract.Common.ComposerImposter;
+﻿using ComposerCore.Attributes;
+using MongoDB.Driver;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Connection.Implementation

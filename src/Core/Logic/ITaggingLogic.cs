@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore.Attributes;
 
 namespace Tesseract.Core.Logic
 {

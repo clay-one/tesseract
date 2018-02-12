@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
+using ComposerCore.Attributes;
 using Nest;
-using Tesseract.Common.ComposerImposter;
 
 namespace Tesseract.Core.Connection
 {

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
-using Tesseract.Common.ComposerImposter;
+using ComposerCore;
+using ComposerCore.Attributes;
 using Tesseract.Core.Context;
 using Tesseract.Core.Storage.Model;
 
@@ -60,10 +61,7 @@ namespace Tesseract.Core.Logic.Implementation
         private static TenantContextInfo GetTenantInfo()
         {
             var info = OwinRequestScopeContext.Current?.OwinContext?.Get<TenantContextInfo>(TenantInfoContextKey);
-            if (info == null)
-            {
-                throw new InvalidOperationException("Tenant info is not initialized on the owin context");
-            }
+            if (info == null) throw new InvalidOperationException("Tenant info is not initialized on the owin context");
 
             return info;
         }
@@ -72,10 +70,8 @@ namespace Tesseract.Core.Logic.Implementation
         {
             var info = GetTenantInfo();
             if (!info.Initialized)
-            {
                 throw new InvalidOperationException(
                     "TenantContextInfo is not yet initialized / populated with the data.");
-            }
 
             return info;
         }

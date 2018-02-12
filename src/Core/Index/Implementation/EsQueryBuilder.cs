@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using ComposerCore.Attributes;
 using Nest;
 using Tesseract.ApiModel.General;
-using Tesseract.Common.ComposerImposter;
 using Tesseract.Common.Extensions;
 
 namespace Tesseract.Core.Index.Implementation
