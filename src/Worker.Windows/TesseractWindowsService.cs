@@ -1,16 +1,15 @@
 ﻿using System.ServiceProcess;
-using log4net;
+using NLog;
 using Tesseract.Worker.Core;
 
 namespace Tesseract.Worker.Windows
 {
     public class TesseractWindowsService : ServiceBase
     {
-        private static readonly ILog Log =
-            LogManager.GetLogger(System.Reflection.MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
-        private WorkerService _service; 
-        
+        private WorkerService _service;
+
         public TesseractWindowsService()
         {
             ServiceName = "Tesseract Worker";

@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
-using log4net;
 using Nest;
+using NLog;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Results;
 using Tesseract.Common.Text;
@@ -17,8 +16,7 @@ namespace Tesseract.Core.Index.Implementation
     [Component]
     public class EsAccountIndexReader : IAccountIndexReader
     {
-        private static readonly ILog Log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
 
         [ComponentPlug]
         public IEsManager EsManager { get; set; }
@@ -63,9 +61,7 @@ namespace Tesseract.Core.Index.Implementation
             };
 
             if (searchResult.Hits.Count > count)
-            {
                 result.ContinueWith = EncodeContinueWith(searchResult.Hits.Reverse().Skip(1).First().Sorts.ToArray());
-            }
 
             return result;
         }
@@ -129,16 +125,10 @@ namespace Tesseract.Core.Index.Implementation
         {
             try
             {
-                if (string.IsNullOrWhiteSpace(continueFrom))
-                {
-                    return null;
-                }
+                if (string.IsNullOrWhiteSpace(continueFrom)) return null;
 
                 var firstDashIndex = continueFrom.IndexOf(",", StringComparison.Ordinal);
-                if (firstDashIndex < 0)
-                {
-                    return null;
-                }
+                if (firstDashIndex < 0) return null;
 
                 var accountId = continueFrom.Substring(firstDashIndex + 1);
                 var encodedCreationTime = continueFrom.Substring(0, firstDashIndex);
@@ -156,12 +146,9 @@ namespace Tesseract.Core.Index.Implementation
 
         private void LogAndThrowIfNotValid(IResponse response)
         {
-            if (response.IsValid)
-            {
-                return;
-            }
+            if (response.IsValid) return;
 
-            Log.Error(response.DebugInformation);
+            Logger.Error(response.DebugInformation);
             throw new InvalidOperationException("Invalid response returned from Elasticsearch");
         }
     }

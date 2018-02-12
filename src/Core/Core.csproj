@@ -6,10 +6,10 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="ComposerCore" Version="2.0.12" />
-    <PackageReference Include="log4net" Version="2.0.8" />
     <PackageReference Include="MongoDB.Driver" Version="2.5.0" />
     <PackageReference Include="morelinq" Version="2.10.0" />
     <PackageReference Include="NEST" Version="6.0.0" />
+    <PackageReference Include="NLog.Config" Version="4.4.12" />
     <PackageReference Include="ServiceStack.Text" Version="5.0.2" />
     <PackageReference Include="StackExchange.Redis" Version="1.2.6" />
   </ItemGroup>

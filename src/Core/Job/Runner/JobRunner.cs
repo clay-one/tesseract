@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
-using log4net;
+using NLog;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;
@@ -15,8 +15,7 @@ namespace Tesseract.Core.Job.Runner
 {
     public class JobRunner
     {
-        protected static readonly ILog Log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
+        protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     }
 
     [Component]
@@ -78,7 +77,7 @@ namespace Tesseract.Core.Job.Runner
             if (_initialized)
             {
                 // Probably called twice because of race condition in JobRunnerManager. Just log and ignore.
-                Log.Info($"Job runner {JobId} - Initialize is called for the second time.");
+                Logger.Info($"Job runner {JobId} - Initialize is called for the second time.");
                 return;
             }
 
@@ -90,7 +89,7 @@ namespace Tesseract.Core.Job.Runner
             _lastStatus = jobData.Status;
             _processor.Initialize(_jobData);
 
-            Log.Info($"Job runner {JobId} - Performing runner initialization");
+            Logger.Info($"Job runner {JobId} - Performing runner initialization");
 
             _statistics.Initialize(jobData);
 
@@ -113,11 +112,11 @@ namespace Tesseract.Core.Job.Runner
         {
             if (!_initialized)
             {
-                Log.Error($"Job runner {JobId} - Starting to process a JobRunner that has not yet been initialized");
+                Logger.Error($"Job runner {JobId} - Starting to process a JobRunner that has not yet been initialized");
                 return;
             }
 
-            Log.Debug($"Job runner {JobId} - Process started");
+            Logger.Debug($"Job runner {JobId} - Process started");
             _started = true;
             _throttleCalculator?.Start();
 
@@ -127,25 +126,25 @@ namespace Tesseract.Core.Job.Runner
             }
             catch (Exception e)
             {
-                Log.Error($"Job runner {JobId} - Fatal uncaught exception in ProcessLoop, dropping the process.", e);
+                Logger.Error($"Job runner {JobId} - Fatal uncaught exception in ProcessLoop, dropping the process.", e);
                 _statistics.ReportFatalException(e);
 
-                Log.Debug($"Job runner {JobId} - Fatal exception reported into statistics");
+                Logger.Debug($"Job runner {JobId} - Fatal exception reported into statistics");
             }
             finally
             {
                 _terminated = true;
-                Log.Debug($"Job runner {JobId} - terminated");
+                Logger.Debug($"Job runner {JobId} - terminated");
 
                 try
                 {
                     // Try to flush statistics, even if exception occured in catch block
                     _statistics.Flush();
-                    Log.Debug($"Job runner {JobId} - Flush statistics completed");
+                    Logger.Debug($"Job runner {JobId} - Flush statistics completed");
                 }
                 catch (Exception e)
                 {
-                    Log.Error($"Job runner {JobId} - Could not flush statistics due to exception", e);
+                    Logger.Error($"Job runner {JobId} - Could not flush statistics due to exception", e);
                 }
             }
         }
@@ -178,7 +177,7 @@ namespace Tesseract.Core.Job.Runner
                 }
                 catch (Exception e)
                 {
-                    Log.Debug($"Job runner {JobId} - Iteration resulted in exception", e);
+                    Logger.Debug($"Job runner {JobId} - Iteration resulted in exception", e);
                     _statistics.ReportIterationException(e);
                 }
 
@@ -201,7 +200,7 @@ namespace Tesseract.Core.Job.Runner
 
             if (!await EnterTaskQueueSemaphore())
             {
-                Log.Debug($"Job runner {JobId} - Could not start batch, task queue semaphore timed out");
+                Logger.Debug($"Job runner {JobId} - Could not start batch, task queue semaphore timed out");
                 return -1;
             }
 
@@ -212,14 +211,14 @@ namespace Tesseract.Core.Job.Runner
             {
                 if (await CheckTargetQueueLengthExceeded())
                 {
-                    Log.Debug($"Job runner {JobId} - Target queue size exceeds limit");
+                    Logger.Debug($"Job runner {JobId} - Target queue size exceeds limit");
                     LeaveTaskQueueSemaphore();
                     return WaitMillisWhenTargetQueueIsFull;
                 }
 
                 if (IsExpired)
                 {
-                    Log.Debug($"Job runner {JobId} - Job is already expired, not processing");
+                    Logger.Debug($"Job runner {JobId} - Job is already expired, not processing");
                     LeaveTaskQueueSemaphore();
                     return WaitMillisWhenJobIsExpired;
                 }
@@ -227,7 +226,7 @@ namespace Tesseract.Core.Job.Runner
                 // The state might have been changed after waiting for the TaskQueueSemaphore
                 if (_lastStatus.State != JobState.InProgress && _lastStatus.State != JobState.Draining)
                 {
-                    Log.Debug($"Job runner {JobId} - Job is not in a runnable state, not processing");
+                    Logger.Debug($"Job runner {JobId} - Job is not in a runnable state, not processing");
                     LeaveTaskQueueSemaphore();
                     return 0;
                 }
@@ -244,7 +243,7 @@ namespace Tesseract.Core.Job.Runner
                 steps = (await _queue.DequeueBatch(nextBatchSize, JobId)).SafeToList();
                 if (steps == null || steps.Count <= 0)
                 {
-                    Log.Debug($"Job runner {JobId} - There's no more work to do");
+                    Logger.Debug($"Job runner {JobId} - There's no more work to do");
 
                     if (await CheckIfJobCanBeMarkedAsComplete())
                     {
@@ -287,7 +286,7 @@ namespace Tesseract.Core.Job.Runner
                 }
                 catch (Exception e)
                 {
-                    Log.Warn($"Job runner {JobId} - Uncaught exception while process invokation", e);
+                    Logger.Warn($"Job runner {JobId} - Uncaught exception while process invokation", e);
                     _statistics.ReportProcessorInvocationException(e);
                 }
                 finally
@@ -301,7 +300,7 @@ namespace Tesseract.Core.Job.Runner
 
         private async Task WaitUntilUnpaused()
         {
-            Log.Debug($"Job runner {JobId} - Starting to loop in paused state");
+            Logger.Debug($"Job runner {JobId} - Starting to loop in paused state");
 
             while (_lastStatus.State == JobState.Paused)
             {
@@ -314,7 +313,7 @@ namespace Tesseract.Core.Job.Runner
                 }
             }
 
-            Log.Debug($"Job runner {JobId} - Not paused anymore, returning back to main loop");
+            Logger.Debug($"Job runner {JobId} - Not paused anymore, returning back to main loop");
         }
 
         private Task<bool> EnterTaskQueueSemaphore()
@@ -337,7 +336,7 @@ namespace Tesseract.Core.Job.Runner
             }
             catch (SemaphoreFullException)
             {
-                Log.Warn($"Job runner {JobId} - Semaphore is full, but it's still being released. Possibly a leak.");
+                Logger.Warn($"Job runner {JobId} - Semaphore is full, but it's still being released. Possibly a leak.");
                 // Ignore the exception
             }
         }
@@ -433,7 +432,7 @@ namespace Tesseract.Core.Job.Runner
 
         public async Task<bool> CheckHealth()
         {
-            Log.Debug($"Job runner {JobId} - Health check starting...");
+            Logger.Debug($"Job runner {JobId} - Health check starting...");
 
             await RefreshData();
             _statistics.ReportStartingHealthCheck();
@@ -442,45 +441,45 @@ namespace Tesseract.Core.Job.Runner
             {
                 if (ShouldStartProcess)
                 {
-                    Log.Debug($"Job runner {JobId} - Health check: we should start processing");
+                    Logger.Debug($"Job runner {JobId} - Health check: we should start processing");
                     StartProcess();
                     return true;
                 }
 
                 if (IsProcessStalled)
                 {
-                    Log.Warn($"Job runner {JobId} - Health check: stalled processing detected");
+                    Logger.Warn($"Job runner {JobId} - Health check: stalled processing detected");
                     return false;
                 }
 
                 if (!IsInRunningState)
                 {
-                    Log.Debug($"Job runner {JobId} - Health check: everything looks okay");
+                    Logger.Debug($"Job runner {JobId} - Health check: everything looks okay");
                     return true;
                 }
 
                 if (IsProcessTerminated)
                 {
-                    Log.Warn($"Job runner {JobId} - Health check: unexpected termination detected.");
+                    Logger.Warn($"Job runner {JobId} - Health check: unexpected termination detected.");
                     return false;
                 }
 
                 if (IsExpired)
                 {
-                    Log.Debug($"Job runner {JobId} - Health check: expiration detected");
+                    Logger.Debug($"Job runner {JobId} - Health check: expiration detected");
                     await TerminateAsExpired();
                     return true;
                 }
 
                 if (await CheckIfJobCanBeMarkedAsComplete())
                 {
-                    Log.Debug($"Job runner {JobId} - Health check: completion detected");
+                    Logger.Debug($"Job runner {JobId} - Health check: completion detected");
                     await TerminateAsComplete();
                 }
             }
             catch (Exception e)
             {
-                Log.Warn($"Job runner {JobId} - Uncaught exception during health check", e);
+                Logger.Warn($"Job runner {JobId} - Uncaught exception during health check", e);
                 _statistics.ReportHealthCheckException(e);
             }
 
@@ -495,12 +494,12 @@ namespace Tesseract.Core.Job.Runner
         private async Task RefreshData()
         {
             _lastStatus = await _jobStore.LoadStatus(TenantId, JobId);
-            Log.Debug($"Job runner {JobId} - refresh complete");
+            Logger.Debug($"Job runner {JobId} - refresh complete");
         }
 
         private async Task TerminateAsExpired()
         {
-            Log.Info($"Job runner {JobId} - Setting job state to Expired");
+            Logger.Info($"Job runner {JobId} - Setting job state to Expired");
             if (await _jobStore.UpdateState(TenantId, JobId, _lastStatus.State, JobState.Expired))
             {
                 await _jobNotification.NotifyJobUpdated(JobId);
@@ -509,7 +508,7 @@ namespace Tesseract.Core.Job.Runner
 
         private async Task TerminateAsComplete()
         {
-            Log.Info($"Job runner {JobId} - Setting job state to Completed");
+            Logger.Info($"Job runner {JobId} - Setting job state to Completed");
             if (await _jobStore.UpdateState(TenantId, JobId, _lastStatus.State, JobState.Completed))
             {
                 await _jobNotification.NotifyJobUpdated(JobId);

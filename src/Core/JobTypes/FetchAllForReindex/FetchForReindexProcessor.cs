@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
 using ComposerCore.Attributes;
-using log4net;
+using NLog;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
 using Tesseract.Core.Queue;
@@ -19,9 +19,8 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
     {
         private const int BatchSize = 500;
 
-        private static readonly ILog Log =
-            LogManager.GetLogger(MethodBase.GetCurrentMethod().DeclaringType);
-
+        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        
         private readonly List<char> _accountIdRangeChars =
             "02468acegikmoqsuwyACEGIKMOQSUWY_-~:"
                 .OrderBy(c => c).ToList();
@@ -55,7 +54,7 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
 
         public async Task<JobProcessingResult> ProcessOne(FetchForReindexStep item)
         {
-            Log.Debug($"ProcessOne: S='{item.RangeStart ?? ""}', " +
+            Logger.Debug($"ProcessOne: S='{item.RangeStart ?? ""}', " +
                       $"E='{item.RangeEnd ?? ""}', A='{item.LastAccountId ?? ""}'");
 
             var result = new JobProcessingResult();
@@ -70,12 +69,12 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
 
             if (accountIds.Any())
             {
-                Log.Debug($"    => Fetched {accountIds.Count} items, " +
+                Logger.Debug($"    => Fetched {accountIds.Count} items, " +
                           $"from {accountIds[0]} to {accountIds[accountIds.Count - 1]}");
             }
             else
             {
-                Log.Debug("    => Fetched nothing :(");
+                Logger.Debug("    => Fetched nothing :(");
             }
 
             if (accountIds.Count >= BatchSize)
@@ -83,11 +82,11 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
                 var subRanges = CalculateRangeBreakdowns(item, accountIds[accountIds.Count - 1]);
                 await FetchQueue.EnqueueBatch(subRanges, _jobId);
 
-                if (Log.IsDebugEnabled)
+                if (Logger.IsDebugEnabled)
                 {
                     subRanges.ForEach(sr =>
                     {
-                        Log.Debug($"    +  S='{sr.RangeStart ?? ""}', " +
+                        Logger.Debug($"    +  S='{sr.RangeStart ?? ""}', " +
                                   $"E='{sr.RangeEnd ?? ""}', A='{sr.LastAccountId ?? ""}'");
                     });
                 }
