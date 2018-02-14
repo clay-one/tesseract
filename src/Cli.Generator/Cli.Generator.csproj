@@ -5,4 +5,21 @@
     <AssemblyName>tsr-gen</AssemblyName>
     <RootNamespace>Tesseract.Cli.Generator</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <Folder Include="ChangeField" />
+    <Folder Include="ChangeTagWeight" />
+    <Folder Include="DeleteTag" />
+    <Folder Include="DeleteTagNs" />
+    <Folder Include="SetField" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiModel\ApiModel.csproj">
+      <Project>{E2B63755-ADA3-42A6-B0BC-992F5D501A22}</Project>
+      <Name>ApiModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Client\Client.csproj" />
+  </ItemGroup>
 </Project>
