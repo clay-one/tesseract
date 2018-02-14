@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>tsr-cmd</AssemblyName>
+    <RootNamespace>Tesseract.Cli.Commander</RootNamespace>
+  </PropertyGroup>
+</Project>

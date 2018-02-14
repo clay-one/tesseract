@@ -1,0 +1,8 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <AssemblyName>tsr-pit-http</AssemblyName>
+    <RootNamespace>Tesseract.Cli.Pit.Http</RootNamespace>
+  </PropertyGroup>
+</Project>
