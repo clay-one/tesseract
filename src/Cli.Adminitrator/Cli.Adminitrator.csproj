@@ -5,4 +5,10 @@
     <AssemblyName>tsr-admin</AssemblyName>
     <RootNamespace>Tesseract.Cli.Adminitrator</RootNamespace>
   </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="CommandLineParser" Version="2.2.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Client\Client.csproj" />
+  </ItemGroup>
 </Project>
