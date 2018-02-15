@@ -15,7 +15,7 @@ namespace Tesseract.Core.Logic.Implementation
         [ComponentPlug]
         public IComposer Composer { get; set; }
 
-        public void InitializeInfo(IOwinRequest request)
+        public void InitializeInfo(string tenantId)
         {
             // TODO: read tenant ID from request
             SetTenantInfo(null);
@@ -60,10 +60,7 @@ namespace Tesseract.Core.Logic.Implementation
 
         private static TenantContextInfo GetTenantInfo()
         {
-            var info = OwinRequestScopeContext.Current?.OwinContext?.Get<TenantContextInfo>(TenantInfoContextKey);
-            if (info == null) throw new InvalidOperationException("Tenant info is not initialized on the owin context");
-
-            return info;
+            throw new NotImplementedException();
         }
 
         private TenantContextInfo GetInitializedTenantInfo()
@@ -78,7 +75,7 @@ namespace Tesseract.Core.Logic.Implementation
 
         private void SetTenantInfo(string tenantId)
         {
-            OwinRequestScopeContext.Current?.OwinContext?.Set(TenantInfoContextKey, new TenantContextInfo(tenantId));
+            throw new NotImplementedException();
         }
 
         #endregion

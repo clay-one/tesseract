@@ -9,7 +9,7 @@ namespace Tesseract.Core.Logic
     {
         string Id { get; }
         string None { get; }
-        void InitializeInfo(IOwinRequest contextRequest);
+        void InitializeInfo(string tenantId);
         Task PopulateInfo();
 
         bool DoesTagNsExist(string ns);
