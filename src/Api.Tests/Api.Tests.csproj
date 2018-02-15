@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.0</TargetFramework>
+    <IsPackable>false</IsPackable>
+    <AssemblyName>Tesseract.Api.Tests</AssemblyName>
+    <RootNamespace>Tesseract.Api.Tests</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="15.5.0" />
+    <PackageReference Include="MSTest.TestAdapter" Version="1.2.0" />
+    <PackageReference Include="MSTest.TestFramework" Version="1.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Jobs\Validation" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\ApiModel\ApiModel.csproj">
+      <Project>{E2B63755-ADA3-42A6-B0BC-992F5D501A22}</Project>
+      <Name>ApiModel</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Client\Client.csproj">
+      <Project>{B1878CDE-D825-4BBD-B44A-437D0017D613}</Project>
+      <Name>Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Core\Core.csproj">
+      <Project>{327152C2-8D8C-4A44-B88F-A1BAFB6716A1}</Project>
+      <Name>Core</Name>
+    </ProjectReference>
+  </ItemGroup>
+</Project>
