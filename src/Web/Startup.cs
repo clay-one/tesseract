@@ -5,6 +5,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 using Tesseract.Common.ComposerStuff;
 
 namespace Tesseract.Web
@@ -24,6 +26,13 @@ namespace Tesseract.Web
         {
             try
             {
+                services.AddMvc()
+                    .AddJsonOptions(options =>
+                    {
+                        options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
+                        options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
+                    });
+
                 var composer = new ComponentContext();
 
                 var serviceProvider = new ComposerServiceProvider(composer);
@@ -42,6 +51,7 @@ namespace Tesseract.Web
         {
             try
             {
+                app.UseMvc();
                 app.Run(async context => { await context.Response.WriteAsync("Hello World!"); });
             }
             catch (Exception e)
