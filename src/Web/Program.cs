@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore;
+﻿using System;
+using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
+using NLog.Web;
 
 namespace Tesseract.Web
 {
@@ -7,7 +9,16 @@ namespace Tesseract.Web
     {
         public static void Main(string[] args)
         {
-            BuildWebHost(args).Run();
+            var logger = NLogBuilder.ConfigureNLog(@"nlog.config").GetCurrentClassLogger();
+            try
+            {
+                BuildWebHost(args).Run();
+            }
+            catch (Exception e)
+            {
+                logger.Error(e, @"Error during application startup.");
+                throw;
+            }
         }
 
         private static IWebHost BuildWebHost(string[] args)
@@ -15,6 +26,7 @@ namespace Tesseract.Web
             return WebHost
                 .CreateDefaultBuilder(args)
                 .UseStartup<Startup>()
+                .UseNLog()
                 .Build();
         }
     }
