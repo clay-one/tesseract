@@ -8,6 +8,7 @@ using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using Tesseract.Common.ComposerStuff;
+using Tesseract.Web.CorrelationId;
 
 namespace Tesseract.Web
 {
@@ -33,10 +34,10 @@ namespace Tesseract.Web
                         options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                     });
 
+                services.AddCorrelationId();
+
                 var composer = new ComponentContext();
-
                 var serviceProvider = new ComposerServiceProvider(composer);
-
                 return serviceProvider;
             }
             catch (Exception e)
@@ -51,6 +52,7 @@ namespace Tesseract.Web
         {
             try
             {
+                app.UseCorrelationId(new CorrelationIdOptions {IncludeInResponse = false});
                 app.UseMvc();
                 app.Run(async context => { await context.Response.WriteAsync("Hello World!"); });
             }
