@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using ComposerCore;
 using ComposerCore.Implementation;
-using Tesseract.Core.Distribution;
 using Tesseract.Core.Job;
 
 namespace Tesseract.Worker.Core
@@ -35,8 +34,6 @@ namespace Tesseract.Worker.Core
                 await component.EnsureJobsDefined();
             }
 
-            await _composer.GetComponent<ICommonTimestamp>().Initialize();
-            await _composer.GetComponent<IDistributionNodes>().StartHeartbeat();
             await _composer.GetComponent<IJobManager>().CleanupOldJobs();
 
             // Watch on notification channel, to get notified of job changes immediately
@@ -79,7 +76,6 @@ namespace Tesseract.Worker.Core
 
         private async Task StopAsync()
         {
-            await _composer.GetComponent<IDistributionNodes>().StopHeartbeat();
             await _composer.GetComponent<IJobNotification>().StopNotificationTargetThread();
 
             _composer.GetComponent<IJobRunnerManager>().StopAllRunners();
