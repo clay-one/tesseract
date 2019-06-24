@@ -1,15 +1,11 @@
-﻿using ComposerCore.Attributes;
+﻿using Microsoft.Extensions.Options;
 using StackExchange.Redis;
 
 namespace Tesseract.Core.Connection.Implementation
 {
-    [Component]
     public class DefaultRedisManager : IRedisManager
     {
-        private ConnectionMultiplexer _connectionMultiplexer;
-
-        [ConfigurationPoint("redis.configurationString")]
-        public string ConfigurationString { get; set; }
+        private readonly ConnectionMultiplexer _connectionMultiplexer;
 
         public IDatabase GetDatabase()
         {
@@ -21,11 +17,11 @@ namespace Tesseract.Core.Connection.Implementation
             return _connectionMultiplexer.GetSubscriber();
         }
 
-        [OnCompositionComplete]
-        public void OnCompositionComplete()
+        public DefaultRedisManager(IOptions<RedisConfig> options)
         {
-            var options = ConfigurationOptions.Parse(ConfigurationString);
-            _connectionMultiplexer = ConnectionMultiplexer.Connect(options);
+            var address = options.Value.Address;
+            var configurationOptions = ConfigurationOptions.Parse(address);
+            _connectionMultiplexer = ConnectionMultiplexer.Connect(configurationOptions);
         }
     }
 }

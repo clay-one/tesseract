@@ -1,11 +1,9 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Index
 {
-    [Contract]
     public interface IAccountIndexReader
     {
         Task<long> Count(string tenantId, AccountQuery query);

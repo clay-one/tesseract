@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Index;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;
@@ -9,18 +8,22 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.JobTypes.AccountIndexing
 {
-    [Component]
-    [ComponentCache(null)]
     public class AccountIndexingProcessor : IJobProcessor<AccountIndexingStep>
     {
-        [ComponentPlug]
-        public IAccountStore AccountStore { get; set; }
+        private readonly IAccountStore _accountStore;
 
-        [ComponentPlug]
-        public IAccountIndexWriter IndexWriter { get; set; }
+        private readonly IAccountIndexWriter _indexWriter;
 
-        [ComponentPlug]
-        public IAccountIndexMapper IndexMapper { get; set; }
+        private readonly IAccountIndexMapper _indexMapper;
+
+        public AccountIndexingProcessor(IAccountStore accountStore,
+            IAccountIndexWriter accountIndexWriter,
+            IAccountIndexMapper accountIndexMapper)
+        {
+            _accountStore = accountStore;
+            _indexWriter = accountIndexWriter;
+            _indexMapper = accountIndexMapper;
+        }
 
         public void Initialize(JobData jobData)
         {
@@ -37,12 +40,12 @@ namespace Tesseract.Core.JobTypes.AccountIndexing
             {
                 var tenantId = t.Key;
 
-                var data = await AccountStore.LoadAccounts(tenantId, t.Select(ti => ti.AccountId));
-                var indexModels = data.Where(d => d != null).Select(d => IndexMapper.MapAccountData(d)).ToList();
+                var data = await _accountStore.LoadAccounts(tenantId, t.Select(ti => ti.AccountId));
+                var indexModels = data.Where(d => d != null).Select(d => _indexMapper.MapAccountData(d)).ToList();
 
                 if (indexModels.Any())
                 {
-                    await IndexWriter.Index(tenantId, indexModels);
+                    await _indexWriter.Index(tenantId, indexModels);
                 }
 
                 return data.Count(d => d == null);

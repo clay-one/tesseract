@@ -1,10 +1,8 @@
-﻿using ComposerCore.Attributes;
-using MongoDB.Driver;
+﻿using MongoDB.Driver;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Connection
 {
-    [Contract]
     public interface IMongoManager
     {
         IMongoDatabase Database { get; }

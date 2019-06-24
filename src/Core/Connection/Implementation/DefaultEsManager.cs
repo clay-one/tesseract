@@ -1,37 +1,43 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Elasticsearch.Net;
+using Microsoft.Extensions.Options;
 using Nest;
 using Tesseract.Core.Index;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage;
 
+
 namespace Tesseract.Core.Connection.Implementation
 {
-    [Component]
     public class DefaultEsManager : IEsManager
     {
-        [ComponentPlug]
-        public IFieldDefinitionStore FieldDefinitionStore { get; set; }
+        private readonly IFieldDefinitionStore _fieldDefinitionStore;
 
-        [ComponentPlug]
-        public ITagNsDefinitionStore TagNsDefinitionStore { get; set; }
+        private readonly ITagNsDefinitionStore _tagNsDefinitionStore;
 
-        [ConfigurationPoint("elasticsearch.connectionPool")]
-        public IConnectionPool ConnectionPool { get; set; }
+        private readonly IConnectionPool _connectionPool;
 
-        [ConfigurationPoint("elasticsearch.indexNamePrefix")]
-        public string IndexNamePrefix { get; set; }
+        private readonly string _indexNamePrefix;
 
         #region Initialization
 
-        [OnCompositionComplete]
-        public void OnCompositionComplete()
+        public DefaultEsManager(IFieldDefinitionStore fieldDefinitionStore,
+            ITagNsDefinitionStore tagNsDefinitionStore,
+            IOptions<ElasticsearchConfig> options)
         {
-            var settings = new ConnectionSettings(ConnectionPool)
+            _fieldDefinitionStore = fieldDefinitionStore;
+            _tagNsDefinitionStore = tagNsDefinitionStore;
+
+            _indexNamePrefix = options.Value.IndexNamePrefix;
+            var uris = options.Value.Uris.Select(u => new Uri(u));
+
+            _connectionPool = new StaticConnectionPool(uris);
+
+            var settings = new ConnectionSettings(_connectionPool)
 #if DEBUG
                     .EnableDebugMode()
                     .OnRequestCompleted(h =>
@@ -42,19 +48,15 @@ namespace Tesseract.Core.Connection.Implementation
                             var reqBody = Encoding.Default.GetString(h.RequestBodyInBytes);
                             Debug.WriteLine($"REQUEST:\n{reqBody}");
                         }
-
-                        //                        if (h.ResponseBodyInBytes != null)
-                        //                            Debug.WriteLine($"RESPONSE:\n{Encoding.Default.GetString(h.ResponseBodyInBytes)}");
                     })
                     .PrettyJson()
 #endif
                     .EnableHttpCompression()
-                    .RequestTimeout(TimeSpan.FromSeconds(10))
-                //                    .BasicAuthentication("elastic", "changeme")
-                ;
+                    .RequestTimeout(TimeSpan.FromSeconds(10));
 
             Client = new ElasticClient(settings);
         }
+
 
         #endregion
 
@@ -64,7 +66,7 @@ namespace Tesseract.Core.Connection.Implementation
 
         public string GetTenantIndexName(string tenantId)
         {
-            return tenantId == null ? IndexNamePrefix : IndexNamePrefix + "_" + tenantId;
+            return tenantId == null ? _indexNamePrefix : _indexNamePrefix + "_" + tenantId;
         }
 
         public async Task DeleteTenantIndex(string tenantId)
@@ -115,14 +117,14 @@ namespace Tesseract.Core.Connection.Implementation
                 await Client.GetMappingAsync(new GetMappingRequest(GetTenantIndexName(tenantId),
                     typeof(AccountIndexModel)));
 
-            var nsList = await TagNsDefinitionStore.LoadAll(tenantId);
+            var nsList = await _tagNsDefinitionStore.LoadAll(tenantId);
             foreach (var ns in nsList)
-                /*
-                     * Kia:
-                     * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
-                     * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
-                     * hence the deletion of `.Properties` expression.
-                     */
+            /*
+                 * Kia:
+                 * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
+                 * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
+                 * hence the deletion of `.Properties` expression.
+                 */
             {
                 if (!mappings.Indices.ContainsKey(IndexNaming.Namespace(ns.Namespace)))
                 {
@@ -130,14 +132,14 @@ namespace Tesseract.Core.Connection.Implementation
                 }
             }
 
-            var fieldList = await FieldDefinitionStore.LoadAll(tenantId);
+            var fieldList = await _fieldDefinitionStore.LoadAll(tenantId);
             foreach (var field in fieldList)
-                /*
-                     * Kia:
-                     * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
-                     * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
-                     * hence the deletion of `.Properties` expression.
-                     */
+            /*
+                 * Kia:
+                 * IGetMappingResponse's `Mapping` property is deleted in newer versions of NEST.
+                 * Also the `Mappings` property is of type `IReadOnlyDictionary<IndexName, IndexMappings>`
+                 * hence the deletion of `.Properties` expression.
+                 */
             {
                 if (!mappings.Indices.ContainsKey(IndexNaming.Field(field.FieldName)))
                 {
@@ -153,7 +155,7 @@ namespace Tesseract.Core.Connection.Implementation
                 {
                     Properties = new Properties
                     {
-                        [IndexNaming.Namespace(ns)] = new TextProperty {Analyzer = "whitespace"}
+                        [IndexNaming.Namespace(ns)] = new TextProperty { Analyzer = "whitespace" }
                     }
                 });
         }

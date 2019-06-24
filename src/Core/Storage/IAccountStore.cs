@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage
 {
-    [Contract]
     public interface IAccountStore
     {
         Task<AccountData> LoadAccount(string tenantId, string accountId);

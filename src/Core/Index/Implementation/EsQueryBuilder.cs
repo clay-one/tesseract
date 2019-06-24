@@ -1,15 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using ComposerCore.Attributes;
 using Nest;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Extensions;
 
 namespace Tesseract.Core.Index.Implementation
 {
-    [Contract]
-    [Component]
     public class EsQueryBuilder
     {
         public QueryContainer BuildEsQuery(QueryContainer query, AccountQuery accountQuery)

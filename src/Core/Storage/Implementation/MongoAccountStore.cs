@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using MongoDB.Driver;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
@@ -11,11 +10,13 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage.Implementation
 {
-    [Component]
     public class MongoAccountStore : IAccountStore
     {
-        [ComponentPlug]
-        public IMongoManager Mongo { get; set; }
+        private readonly IMongoManager Mongo;
+        public MongoAccountStore(IMongoManager mongoManager)
+        {
+            Mongo = mongoManager;
+        }
 
         public async Task<AccountData> LoadAccount(string tenantId, string accountId)
         {

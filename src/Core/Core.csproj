@@ -5,7 +5,9 @@
     <RootNamespace>Tesseract.Core</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="ComposerCore" Version="2.0.12" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="2.2.0" />
+    <PackageReference Include="Microsoft.Extensions.Options" Version="2.2.0" />
     <PackageReference Include="MongoDB.Driver" Version="2.5.0" />
     <PackageReference Include="morelinq" Version="2.10.0" />
     <PackageReference Include="NEST" Version="6.0.1" />

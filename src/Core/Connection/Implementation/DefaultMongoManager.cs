@@ -1,20 +1,11 @@
-﻿using ComposerCore.Attributes;
+﻿using Microsoft.Extensions.Options;
 using MongoDB.Driver;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Connection.Implementation
 {
-    [Component]
     public class DefaultMongoManager : IMongoManager
     {
-        [ConfigurationPoint("mongo.clientSettings")]
-        public MongoClientSettings ClientSettings { get; set; }
-
-        [ConfigurationPoint("mongo.databaseName")]
-        public string DatabaseName { get; set; }
-
-        [ConfigurationPoint("mongo.databaseSettings")]
-        public MongoDatabaseSettings DatabaseSettings { get; set; }
 
         public IMongoDatabase Database { get; private set; }
         public IMongoCollection<AccountData> Accounts { get; private set; }
@@ -30,11 +21,15 @@ namespace Tesseract.Core.Connection.Implementation
             Jobs.DeleteMany(jd => jd.TenantId == tenantId);
         }
 
-        [OnCompositionComplete]
-        public void OnCompositionComplete()
+        public DefaultMongoManager(IOptions<MongoDbConfig> options)
         {
-            var client = new MongoClient(ClientSettings);
-            Database = client.GetDatabase(DatabaseName, DatabaseSettings);
+            var address = options.Value.Address;
+            var mongoUri = new MongoUrl(address);
+
+
+            var client = new MongoClient(mongoUri);
+
+            Database = client.GetDatabase(mongoUri.DatabaseName);
 
             Accounts = Database.GetCollection<AccountData>(nameof(AccountData));
             FieldDefinitions = Database.GetCollection<FieldDefinitionData>(nameof(FieldDefinitionData));

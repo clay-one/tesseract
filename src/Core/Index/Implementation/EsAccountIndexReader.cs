@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
+using Microsoft.Extensions.Logging;
 using Nest;
 using NLog;
 using Tesseract.ApiModel.General;
@@ -13,16 +13,21 @@ using Tesseract.Core.Index.Model;
 
 namespace Tesseract.Core.Index.Implementation
 {
-    [Component]
     public class EsAccountIndexReader : IAccountIndexReader
     {
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly ILogger<EsAccountIndexReader> _logger;
 
-        [ComponentPlug]
-        public IEsManager EsManager { get; set; }
+        private readonly IEsManager EsManager;
 
-        [ComponentPlug]
         public EsQueryBuilder QueryBuilder { get; set; }
+
+        public EsAccountIndexReader(IEsManager esManager, EsQueryBuilder esQueryBuilder,
+            ILogger<EsAccountIndexReader> logger)
+        {
+            EsManager = esManager;
+            QueryBuilder = esQueryBuilder;
+            _logger = logger;
+        }
 
         public async Task<long> Count(string tenantId, AccountQuery query)
         {
@@ -117,8 +122,8 @@ namespace Tesseract.Core.Index.Implementation
 
         private string EncodeContinueWith(IReadOnlyList<object> lastSorts)
         {
-            var encodedCreationTime = Base32.ToString(BitConverter.GetBytes((long) lastSorts[0]));
-            return $"{encodedCreationTime},{(string) lastSorts[1]}";
+            var encodedCreationTime = Base32.ToString(BitConverter.GetBytes((long)lastSorts[0]));
+            return $"{encodedCreationTime},{(string)lastSorts[1]}";
         }
 
         private object[] DecodeContinueFrom(string continueFrom)
@@ -134,7 +139,7 @@ namespace Tesseract.Core.Index.Implementation
                 var encodedCreationTime = continueFrom.Substring(0, firstDashIndex);
                 var creationTime = BitConverter.ToInt64(Base32.ToBytes(encodedCreationTime), 0);
 
-                return new object[] {creationTime, accountId};
+                return new object[] { creationTime, accountId };
             }
             catch (Exception)
             {
@@ -148,7 +153,7 @@ namespace Tesseract.Core.Index.Implementation
         {
             if (response.IsValid) return;
 
-            Logger.Error(response.DebugInformation);
+            _logger.LogError(response.DebugInformation);
             throw new InvalidOperationException("Invalid response returned from Elasticsearch");
         }
     }

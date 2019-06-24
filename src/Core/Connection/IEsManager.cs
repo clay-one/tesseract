@@ -1,10 +1,8 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Nest;
 
 namespace Tesseract.Core.Connection
 {
-    [Contract]
     public interface IEsManager
     {
         ElasticClient Client { get; }

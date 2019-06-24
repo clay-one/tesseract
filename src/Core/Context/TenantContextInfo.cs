@@ -1,9 +1,10 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
+using ServiceProviderServiceExtensions = Microsoft.Extensions.DependencyInjection.ServiceProviderServiceExtensions;
 
 namespace Tesseract.Core.Context
 {
@@ -22,10 +23,10 @@ namespace Tesseract.Core.Context
         public ReadOnlyDictionary<string, TagNsDefinitionData> TagNsDefinitions { get; private set; }
         public ReadOnlyDictionary<string, FieldDefinitionData> FieldDefinitions { get; private set; }
 
-        public async Task Initialize(IComposer composer)
+        public async Task Initialize(IServiceProvider serviceProvider)
         {
-            var tagNsStore = composer.GetComponent<ITagNsDefinitionStore>();
-            var fieldStore = composer.GetComponent<IFieldDefinitionStore>();
+            var tagNsStore = ServiceProviderServiceExtensions.GetRequiredService<ITagNsDefinitionStore>(serviceProvider);
+            var fieldStore = ServiceProviderServiceExtensions.GetRequiredService<IFieldDefinitionStore>(serviceProvider);
 
             var allTagNss = await tagNsStore.LoadAll(Id);
             TagNsDefinitions = new ReadOnlyDictionary<string, TagNsDefinitionData>(

@@ -1,14 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using ComposerCore.Attributes;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Index.Model;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Index.Implementation
 {
-    [Component]
     public class DefaultAccountIndexMapper : IAccountIndexMapper
     {
         public AccountIndexModel MapAccountData(AccountData accountData)
