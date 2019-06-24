@@ -1,5 +1,4 @@
 ﻿using System;
-using ComposerCore.Implementation;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -7,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
-using Tesseract.Common.ComposerStuff;
 using Tesseract.Web.CorrelationId;
 
 namespace Tesseract.Web
@@ -23,7 +21,7 @@ namespace Tesseract.Web
 
         // This method gets called by the runtime. Use this method to add services to the container.
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
-        public IServiceProvider ConfigureServices(IServiceCollection services)
+        public void ConfigureServices(IServiceCollection services)
         {
             try
             {
@@ -35,10 +33,6 @@ namespace Tesseract.Web
                     });
 
                 services.AddCorrelationId();
-
-                var composer = new ComponentContext();
-                var serviceProvider = new ComposerServiceProvider(composer);
-                return serviceProvider;
             }
             catch (Exception e)
             {
@@ -52,7 +46,7 @@ namespace Tesseract.Web
         {
             try
             {
-                app.UseCorrelationId(new CorrelationIdOptions {IncludeInResponse = false});
+                app.UseCorrelationId(new CorrelationIdOptions { IncludeInResponse = false });
                 app.UseMvc();
                 app.Run(async context => { await context.Response.WriteAsync("Hello World!"); });
             }
