@@ -3,39 +3,39 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.27130.2026
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiModel", "ApiModel\ApiModel.csproj", "{E2B63755-ADA3-42A6-B0BC-992F5D501A22}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ApiModel", "src\ApiModel\ApiModel.csproj", "{E2B63755-ADA3-42A6-B0BC-992F5D501A22}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "Client\Client.csproj", "{B1878CDE-D825-4BBD-B44A-437D0017D613}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Client", "src\Client\Client.csproj", "{B1878CDE-D825-4BBD-B44A-437D0017D613}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "Common\Common.csproj", "{702A6D7A-20D2-4475-9EED-C6ED8735BA16}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Common", "src\Common\Common.csproj", "{702A6D7A-20D2-4475-9EED-C6ED8735BA16}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "Core\Core.csproj", "{327152C2-8D8C-4A44-B88F-A1BAFB6716A1}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core", "src\Core\Core.csproj", "{327152C2-8D8C-4A44-B88F-A1BAFB6716A1}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BackgroundWorkers", "BackgroundWorkers", "{194284BE-A65A-4FBF-8CC5-4FA55E3E8AB6}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BackgroundWorkers", "src\BackgroundWorkers", "{194284BE-A65A-4FBF-8CC5-4FA55E3E8AB6}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.Core", "Worker.Core\Worker.Core.csproj", "{A415C348-8F11-4F4E-AF30-4022DFED322F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Worker.Core", "src\Worker.Core\Worker.Core.csproj", "{A415C348-8F11-4F4E-AF30-4022DFED322F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.Windows", "Worker.Windows\Worker.Windows.csproj", "{A526DBA2-E767-44C1-BC31-957F5180CB36}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Worker.Windows", "src\Worker.Windows\Worker.Windows.csproj", "{A526DBA2-E767-44C1-BC31-957F5180CB36}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{A1F3C2FC-09CE-4051-AEF4-7E9245CCA628}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Tests", "Core.Tests\Core.Tests.csproj", "{8F9A717F-B93F-4D02-AB85-57943E2E4EE7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.Tests", "src\Core.Tests\Core.Tests.csproj", "{8F9A717F-B93F-4D02-AB85-57943E2E4EE7}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Web", "Web\Web.csproj", "{A5C00293-46E7-412E-8661-3B7D9FBCCA47}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "src\Web", "src\Web\Web.csproj", "{A5C00293-46E7-412E-8661-3B7D9FBCCA47}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CliTools", "CliTools", "{549595F1-CA48-42E4-BAE9-D742F56AB06A}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "CliTools", "src\CliTools", "{549595F1-CA48-42E4-BAE9-D742F56AB06A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Adminitrator", "Cli.Adminitrator\Cli.Adminitrator.csproj", "{96F5C805-C06D-4729-86DB-E5D17F8B9140}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Adminitrator", "src\Cli.Adminitrator\Cli.Adminitrator.csproj", "{96F5C805-C06D-4729-86DB-E5D17F8B9140}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Commander", "Cli.Commander\Cli.Commander.csproj", "{22888F53-FDF5-4767-B475-9E02F2C94ED3}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Commander", "src\Cli.Commander\Cli.Commander.csproj", "{22888F53-FDF5-4767-B475-9E02F2C94ED3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Generator", "Cli.Generator\Cli.Generator.csproj", "{151645E3-7B34-42A1-B01B-A58A378FBF95}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Generator", "src\Cli.Generator\Cli.Generator.csproj", "{151645E3-7B34-42A1-B01B-A58A378FBF95}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Pit.Http", "Cli.Pit.Http\Cli.Pit.Http.csproj", "{A941EA87-E5FD-47DA-AD07-B2F1E6E45DDF}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Pit.Http", "src\Cli.Pit.Http\Cli.Pit.Http.csproj", "{A941EA87-E5FD-47DA-AD07-B2F1E6E45DDF}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Watcher", "Cli.Watcher\Cli.Watcher.csproj", "{B10FA83F-BDA6-4DA4-A2E0-1B3874A591E7}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Cli.Watcher", "src\Cli.Watcher\Cli.Watcher.csproj", "{B10FA83F-BDA6-4DA4-A2E0-1B3874A591E7}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.Tests", "Api.Tests\Api.Tests.csproj", "{0D085099-D439-4770-A40B-A3FF5390F89A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Api.Tests", "src\Api.Tests\Api.Tests.csproj", "{0D085099-D439-4770-A40B-A3FF5390F89A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
