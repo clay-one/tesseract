@@ -1,17 +1,19 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 
 namespace Tesseract.Core.Job.Implementation
 {
-    [Component]
     public class DefaultJobNotificationTarget : IJobNotificationTarget
     {
-        [ComponentPlug]
-        public IJobRunnerManager RunnerManager { get; set; }
+        private readonly IJobRunnerManager _runnerManager;
+
+        public DefaultJobNotificationTarget(IJobRunnerManager jobRunnerManager)
+        {
+            _runnerManager = jobRunnerManager;
+        }
 
         public async Task ProcessNotification(string jobId)
         {
-            await RunnerManager.CheckHealthOrCreateRunner(jobId);
+            await _runnerManager.CheckHealthOrCreateRunner(jobId);
         }
     }
 }

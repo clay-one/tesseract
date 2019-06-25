@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Tesseract.Common.Extensions;
 using Tesseract.Common.Results;
 using Tesseract.Common.Text;
@@ -12,17 +11,20 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job.Implementation
 {
-    [Component]
     public class DefaultJobManager : IJobManager
     {
-        [ComponentPlug]
-        public IJobNotification JobNotification { get; set; }
+        private readonly IJobNotification _jobNotification;
 
-        [ComponentPlug]
-        public IJobStore JobStore { get; set; }
+        private readonly IJobStore _jobStore;
+        private readonly IServiceProvider _serviceProvider;
 
-        [ComponentPlug]
-        public IComposer Composer { get; set; }
+
+        public DefaultJobManager(IJobNotification jobNotification, IJobStore jobStore, IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+            _jobNotification = jobNotification;
+            _jobStore = jobStore;
+        }
 
         public Task CleanupOldJobs()
         {
@@ -74,20 +76,20 @@ namespace Tesseract.Core.Job.Implementation
                 }
             };
 
-            await JobStore.AddOrUpdateDefinition(job);
-            await Composer.GetComponent<IJobQueue<TJobStep>>().EnsureJobQueueExists(jobId);
+            await _jobStore.AddOrUpdateDefinition(job);
+            await _serviceProvider.GetService<IJobQueue<TJobStep>>().EnsureJobQueueExists(jobId);
 
             return jobId;
         }
 
         public async Task AddPredecessor(string tenantId, string jobId, string predecessorJobId)
         {
-            await JobStore.AddPredecessor(tenantId, jobId, predecessorJobId);
+            await _jobStore.AddPredecessor(tenantId, jobId, predecessorJobId);
         }
 
         public async Task StartJob(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 throw new InvalidOperationException($"JobId {jobId} does not exist.");
@@ -98,17 +100,17 @@ namespace Tesseract.Core.Job.Implementation
                 throw new InvalidOperationException($"JobId {jobId} cannot be started due to its state.");
             }
 
-            if (!await JobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress))
+            if (!await _jobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress))
             {
                 throw new InvalidOperationException($"JobId {jobId} could not be updated to start.");
             }
 
-            await JobNotification.NotifyJobUpdated(jobId);
+            await _jobNotification.NotifyJobUpdated(jobId);
         }
 
         public async Task StartJobIfNotStarted(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 throw new InvalidOperationException($"JobId {jobId} does not exist.");
@@ -119,13 +121,13 @@ namespace Tesseract.Core.Job.Implementation
                 return;
             }
 
-            await JobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress);
-            await JobNotification.NotifyJobUpdated(jobId);
+            await _jobStore.UpdateState(tenantId, jobId, JobState.Initializing, JobState.InProgress);
+            await _jobNotification.NotifyJobUpdated(jobId);
         }
 
         public async Task<ApiValidationResult> StopJob(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
@@ -145,7 +147,7 @@ namespace Tesseract.Core.Job.Implementation
             {
                 foreach (var preprocessorJobId in jobData.Configuration.PreprocessorJobIds)
                 {
-                    var preprocessorJobStatus = await JobStore.LoadStatus(tenantId, preprocessorJobId);
+                    var preprocessorJobStatus = await _jobStore.LoadStatus(tenantId, preprocessorJobId);
                     if (preprocessorJobStatus.State < JobState.Completed)
                     {
                         return ApiValidationResult.Failure(ErrorKeys.JobActionHasPreprocessorDependency,
@@ -157,10 +159,10 @@ namespace Tesseract.Core.Job.Implementation
             var changeableStates = new[] {JobState.InProgress, JobState.Draining, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
             {
-                var updated = await JobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Stopped);
+                var updated = await _jobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Stopped);
                 if (updated)
                 {
-                    await JobNotification.NotifyJobUpdated(jobId);
+                    await _jobNotification.NotifyJobUpdated(jobId);
 
                     var jobQueue = GetJobQueue(jobData.JobStepType);
                     if (jobQueue != null)
@@ -177,7 +179,7 @@ namespace Tesseract.Core.Job.Implementation
 
         public async Task<ApiValidationResult> PauseJob(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
@@ -191,10 +193,10 @@ namespace Tesseract.Core.Job.Implementation
             var changeableStates = new[] {JobState.InProgress, JobState.Draining};
             if (changeableStates.Any(s => s == jobData.Status.State))
             {
-                var updated = await JobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Paused);
+                var updated = await _jobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Paused);
                 if (updated)
                 {
-                    await JobNotification.NotifyJobUpdated(jobId);
+                    await _jobNotification.NotifyJobUpdated(jobId);
                     return ApiValidationResult.Ok();
                 }
             }
@@ -204,7 +206,7 @@ namespace Tesseract.Core.Job.Implementation
 
         public async Task<ApiValidationResult> DrainJob(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
@@ -218,10 +220,10 @@ namespace Tesseract.Core.Job.Implementation
             var changeableStates = new[] {JobState.InProgress, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
             {
-                var updated = await JobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Draining);
+                var updated = await _jobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.Draining);
                 if (updated)
                 {
-                    await JobNotification.NotifyJobUpdated(jobId);
+                    await _jobNotification.NotifyJobUpdated(jobId);
                     return ApiValidationResult.Ok();
                 }
             }
@@ -231,7 +233,7 @@ namespace Tesseract.Core.Job.Implementation
 
         public async Task<ApiValidationResult> ResumeJob(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
@@ -245,10 +247,10 @@ namespace Tesseract.Core.Job.Implementation
             var changeableStates = new[] {JobState.Draining, JobState.Paused};
             if (changeableStates.Any(s => s == jobData.Status.State))
             {
-                var updated = await JobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.InProgress);
+                var updated = await _jobStore.UpdateState(tenantId, jobId, jobData.Status.State, JobState.InProgress);
                 if (updated)
                 {
-                    await JobNotification.NotifyJobUpdated(jobId);
+                    await _jobNotification.NotifyJobUpdated(jobId);
                     return ApiValidationResult.Ok();
                 }
             }
@@ -258,7 +260,7 @@ namespace Tesseract.Core.Job.Implementation
 
         public async Task<ApiValidationResult> PurgeJobQueue(string tenantId, string jobId)
         {
-            var jobData = await JobStore.Load(tenantId, jobId);
+            var jobData = await _jobStore.Load(tenantId, jobId);
             if (jobData == null)
             {
                 return ApiValidationResult.Failure(ErrorKeys.InvalidJobId);
@@ -276,7 +278,7 @@ namespace Tesseract.Core.Job.Implementation
 
         public async Task<long> GetQueueLength(string tenantId, string jobId)
         {
-            var jobQueue = GetJobQueue((await JobStore.Load(tenantId, jobId))?.JobStepType);
+            var jobQueue = GetJobQueue((await _jobStore.Load(tenantId, jobId))?.JobStepType);
             return jobQueue == null ? 0 : await jobQueue.GetQueueLength(jobId);
         }
 
@@ -348,7 +350,7 @@ namespace Tesseract.Core.Job.Implementation
             }
 
             var contract = typeof(IJobQueue<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract) is IJobQueue jobQueue))
+            if (!(_serviceProvider.GetService(contract) is IJobQueue jobQueue))
             {
                 return null;
             }

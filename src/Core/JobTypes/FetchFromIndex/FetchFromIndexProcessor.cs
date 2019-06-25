@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using MoreLinq;
 using ServiceStack;
 using Tesseract.Core.Index;
@@ -12,24 +11,27 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.JobTypes.FetchFromIndex
 {
-    [Component]
-    [ComponentCache(null)]
     public class FetchFromIndexProcessor : IJobProcessor<FetchFromIndexStep>
     {
         private const int MaxFetchSize = 2500;
+
+        private readonly IJobQueue<FetchFromIndexStep> _fetchQueue;
+
+        private readonly IAccountIndexReader _index;
+
+        private readonly IJobQueue<PushStepBase> _pushQueue;
         private int _fetchSize;
         private string _jobId;
 
         private FetchFromIndexParameters _parameters;
 
-        [ComponentPlug]
-        public IAccountIndexReader Index { get; set; }
-
-        [ComponentPlug]
-        public IJobQueue<FetchFromIndexStep> FetchQueue { get; set; }
-
-        [ComponentPlug]
-        public IJobQueue<PushStepBase> PushQueue { get; set; }
+        public FetchFromIndexProcessor(IAccountIndexReader accountIndexReader, IJobQueue<PushStepBase> pushQueue,
+            IJobQueue<FetchFromIndexStep> fetchQueue)
+        {
+            _index = accountIndexReader;
+            _fetchQueue = fetchQueue;
+            _pushQueue = pushQueue;
+        }
 
         public void Initialize(JobData jobData)
         {
@@ -52,7 +54,7 @@ namespace Tesseract.Core.JobTypes.FetchFromIndex
 
         public async Task<long> GetTargetQueueLength()
         {
-            return await PushQueue.GetQueueLength(_parameters.TargetJobId);
+            return await _pushQueue.GetQueueLength(_parameters.TargetJobId);
         }
 
         public async Task<JobProcessingResult> ProcessOne(FetchFromIndexStep step)
@@ -95,8 +97,8 @@ namespace Tesseract.Core.JobTypes.FetchFromIndex
                     Sequence = step.Sequence + 1
                 };
 
-                await PushQueue.EnqueueBatch(targetSteps, _parameters.TargetJobId);
-                await FetchQueue.Enqueue(nextFetchStep, _jobId);
+                await _pushQueue.EnqueueBatch(targetSteps, _parameters.TargetJobId);
+                await _fetchQueue.Enqueue(nextFetchStep, _jobId);
 
                 result.ItemsGeneratedForTargetQueue += targetSteps.Count;
                 result.ItemsRequeued++;
@@ -106,7 +108,7 @@ namespace Tesseract.Core.JobTypes.FetchFromIndex
 
             try
             {
-                await Index.TerminateScroll(searchResult.ScrollId);
+                await _index.TerminateScroll(searchResult.ScrollId);
             }
             catch (Exception e)
             {
@@ -127,12 +129,12 @@ namespace Tesseract.Core.JobTypes.FetchFromIndex
 
             if (string.IsNullOrWhiteSpace(step.ScrollId))
             {
-                searchResult = await Index.StartScroll(_parameters.TenantId, _parameters.Query, _fetchSize,
+                searchResult = await _index.StartScroll(_parameters.TenantId, _parameters.Query, _fetchSize,
                     24 * 60 * 60, _parameters.SliceCount, step.SliceId);
             }
             else
             {
-                searchResult = await Index.ContinueScroll(step.ScrollId, 24 * 60 * 60);
+                searchResult = await _index.ContinueScroll(step.ScrollId, 24 * 60 * 60);
             }
 
             return searchResult;

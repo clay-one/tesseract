@@ -1,24 +1,26 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Job;
 using Tesseract.Core.Logic;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.JobTypes.AccountIndexing
 {
-    [Component]
     public class AccountIndexingStaticJob : IStaticJob
     {
-        [ComponentPlug]
-        public IJobManager JobManager { get; set; }
+        private readonly IJobManager _jobManager;
 
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        private readonly ICurrentTenantLogic _tenant;
+
+        public AccountIndexingStaticJob(IJobManager jobManager, ICurrentTenantLogic currentTenantLogic)
+        {
+            _jobManager = jobManager;
+            _tenant = currentTenantLogic;
+        }
 
         public async Task EnsureJobsDefined()
         {
-            await JobManager.CreateNewJobOrUpdateDefinition<AccountIndexingStep>(
-                Tenant.None, "account-indexer", nameof(AccountIndexingStep), new JobConfigurationData
+            await _jobManager.CreateNewJobOrUpdateDefinition<AccountIndexingStep>(
+                _tenant.None, "account-indexer", nameof(AccountIndexingStep), new JobConfigurationData
                 {
                     MaxBatchSize = 100,
                     MaxConcurrentBatchesPerWorker = 5,
@@ -26,7 +28,7 @@ namespace Tesseract.Core.JobTypes.AccountIndexing
                     MaxBlockedSecondsPerCycle = 300
                 });
 
-            await JobManager.StartJobIfNotStarted(Tenant.None, nameof(AccountIndexingStep));
+            await _jobManager.StartJobIfNotStarted(_tenant.None, nameof(AccountIndexingStep));
         }
     }
 }

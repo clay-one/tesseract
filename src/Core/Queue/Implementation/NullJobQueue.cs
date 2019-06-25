@@ -1,12 +1,17 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 
 namespace Tesseract.Core.Queue.Implementation
 {
-    [Component]
-    [IgnoredOnAssemblyRegistration]
+    /// <summary>
+    /// This type was not automatically registered in the original code
+    /// since the "Default" DI container for .netcore does not support named registration
+    /// we are omitting the registration altogether
+    /// </summary>
+
+    //[Component]
+    //[IgnoredOnAssemblyRegistration]
     public class NullJobQueue<TItem> : IJobQueue<TItem> where TItem : JobStepBase
     {
         public Task EnsureJobQueueExists(string jobId = null)

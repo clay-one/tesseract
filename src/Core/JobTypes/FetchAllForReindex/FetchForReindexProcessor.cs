@@ -1,8 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using NLog;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
@@ -13,28 +11,31 @@ using Tesseract.Core.Utility;
 
 namespace Tesseract.Core.JobTypes.FetchAllForReindex
 {
-    [Component]
-    [ComponentCache(null)]
     public class FetchForReindexProcessor : IJobProcessor<FetchForReindexStep>
     {
         private const int BatchSize = 500;
 
         private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
-        
+
         private readonly List<char> _accountIdRangeChars =
             "02468acegikmoqsuwyACEGIKMOQSUWY_-~:"
                 .OrderBy(c => c).ToList();
 
         private string _jobId;
 
-        [ComponentPlug]
-        public IAccountStore AccountStore { get; set; }
+        public FetchForReindexProcessor(IAccountStore accountStore, IJobQueue<AccountIndexingStep> indexQueue,
+            IJobQueue<FetchForReindexStep> fetchQueue)
+        {
+            _accountStore = accountStore;
+            _indexQueue = indexQueue;
+            _fetchQueue = fetchQueue;
+        }
 
-        [ComponentPlug]
-        public IJobQueue<AccountIndexingStep> IndexQueue { get; set; }
+        private readonly IAccountStore _accountStore;
 
-        [ComponentPlug]
-        public IJobQueue<FetchForReindexStep> FetchQueue { get; set; }
+        private readonly IJobQueue<AccountIndexingStep> _indexQueue;
+
+        private readonly IJobQueue<FetchForReindexStep> _fetchQueue;
 
         public void Initialize(JobData jobData)
         {
@@ -49,17 +50,17 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
 
         public Task<long> GetTargetQueueLength()
         {
-            return IndexQueue.GetQueueLength();
+            return _indexQueue.GetQueueLength();
         }
 
         public async Task<JobProcessingResult> ProcessOne(FetchForReindexStep item)
         {
             Logger.Debug($"ProcessOne: S='{item.RangeStart ?? ""}', " +
-                      $"E='{item.RangeEnd ?? ""}', A='{item.LastAccountId ?? ""}'");
+                         $"E='{item.RangeEnd ?? ""}', A='{item.LastAccountId ?? ""}'");
 
             var result = new JobProcessingResult();
 
-            var accountIds = await AccountStore.FetchAccountIds(
+            var accountIds = await _accountStore.FetchAccountIds(
                 BatchSize,
                 item.TenantId,
                 item.LastAccountId ?? item.RangeStart,
@@ -70,7 +71,7 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
             if (accountIds.Any())
             {
                 Logger.Debug($"    => Fetched {accountIds.Count} items, " +
-                          $"from {accountIds[0]} to {accountIds[accountIds.Count - 1]}");
+                             $"from {accountIds[0]} to {accountIds[accountIds.Count - 1]}");
             }
             else
             {
@@ -80,21 +81,21 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
             if (accountIds.Count >= BatchSize)
             {
                 var subRanges = CalculateRangeBreakdowns(item, accountIds[accountIds.Count - 1]);
-                await FetchQueue.EnqueueBatch(subRanges, _jobId);
+                await _fetchQueue.EnqueueBatch(subRanges, _jobId);
 
                 if (Logger.IsDebugEnabled)
                 {
                     subRanges.ForEach(sr =>
                     {
                         Logger.Debug($"    +  S='{sr.RangeStart ?? ""}', " +
-                                  $"E='{sr.RangeEnd ?? ""}', A='{sr.LastAccountId ?? ""}'");
+                                     $"E='{sr.RangeEnd ?? ""}', A='{sr.LastAccountId ?? ""}'");
                     });
                 }
 
                 result.ItemsRequeued += subRanges.Count;
             }
 
-            await IndexQueue.EnqueueBatch(accountIds.Select(aid => new AccountIndexingStep
+            await _indexQueue.EnqueueBatch(accountIds.Select(aid => new AccountIndexingStep
             {
                 TenantId = item.TenantId,
                 AccountId = aid

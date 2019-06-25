@@ -1,12 +1,10 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Common.Results;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job
 {
-    [Contract]
     public interface IJobManager
     {
         Task CleanupOldJobs();

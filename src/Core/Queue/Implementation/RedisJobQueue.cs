@@ -2,17 +2,19 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using ServiceStack;
 using Tesseract.Core.Connection;
 
 namespace Tesseract.Core.Queue.Implementation
 {
-    [Component]
     public class RedisJobQueue<TItem> : IJobQueue<TItem> where TItem : JobStepBase
     {
-        [ComponentPlug]
-        public IRedisManager RedisManager { get; set; }
+        private readonly IRedisManager _redisManager;
+
+        public RedisJobQueue(IRedisManager redisManager)
+        {
+            _redisManager = redisManager;
+        }
 
         public Task EnsureJobQueueExists(string jobId = null)
         {
@@ -22,30 +24,30 @@ namespace Tesseract.Core.Queue.Implementation
 
         public async Task<long> GetQueueLength(string jobId = null)
         {
-            return await RedisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
+            return await _redisManager.GetDatabase().ListLengthAsync(GetRedisKey(jobId));
         }
 
         public async Task PurgeQueueContents(string jobId = null)
         {
-            await RedisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
+            await _redisManager.GetDatabase().KeyDeleteAsync(GetRedisKey(jobId));
         }
 
         public async Task Enqueue(TItem item, string jobId = null)
         {
-            await RedisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(jobId), item.ToJson());
+            await _redisManager.GetDatabase().ListLeftPushAsync(GetRedisKey(jobId), item.ToJson());
         }
 
         public async Task EnqueueBatch(IEnumerable<TItem> items, string jobId = null)
         {
             var redisKey = GetRedisKey(jobId);
-            var redisDb = RedisManager.GetDatabase();
+            var redisDb = _redisManager.GetDatabase();
             var tasks = items.Select(item => redisDb.ListLeftPushAsync(redisKey, item.ToJson()));
             await Task.WhenAll(tasks);
         }
 
         public async Task<TItem> Dequeue(string jobId = null)
         {
-            string serialized = await RedisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
+            string serialized = await _redisManager.GetDatabase().ListRightPopAsync(GetRedisKey(jobId));
             return serialized.FromJson<TItem>();
         }
 
@@ -57,7 +59,7 @@ namespace Tesseract.Core.Queue.Implementation
             }
 
             var redisKey = GetRedisKey(jobId);
-            var redisDb = RedisManager.GetDatabase();
+            var redisDb = _redisManager.GetDatabase();
             var tasks = Enumerable
                 .Range(1, maxBatchSize)
                 .Select(i => redisDb.ListRightPopAsync(redisKey));

@@ -2,8 +2,7 @@
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Attributes;
+using Microsoft.Extensions.DependencyInjection;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Job.Runner;
 using Tesseract.Core.Queue;
@@ -12,25 +11,23 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job.Implementation
 {
-    [Component]
     public class DefaultJobRunnerManager : IJobRunnerManager
     {
+        private readonly IJobStore _jobStore;
         private readonly ConcurrentDictionary<string, IJobRunner> _runners;
+        private readonly IServiceProvider _serviceProvider;
 
-        public DefaultJobRunnerManager()
+        public DefaultJobRunnerManager(IJobStore jobStore, IServiceProvider serviceProvider)
         {
+            _jobStore = jobStore;
+            _serviceProvider = serviceProvider;
             _runners = new ConcurrentDictionary<string, IJobRunner>();
         }
 
-        [ComponentPlug]
-        public IJobStore JobStore { get; set; }
-
-        [ComponentPlug]
-        public IComposer Composer { get; set; }
 
         public async Task CheckStoreJobs()
         {
-            var jobIds = await JobStore.LoadAllRunnableIdsFromAnyTenant();
+            var jobIds = await _jobStore.LoadAllRunnableIdsFromAnyTenant();
             var runnerIds = _runners.Keys.ToList();
 
             var jobIdsToStart = jobIds.Except(runnerIds);
@@ -110,7 +107,7 @@ namespace Tesseract.Core.Job.Implementation
                 return jobRunner;
             }
 
-            var jobData = await JobStore.LoadFromAnyTenant(jobId);
+            var jobData = await _jobStore.LoadFromAnyTenant(jobId);
             if (jobData.Status.State < JobState.InProgress || jobData.Status.State >= JobState.Completed)
             {
                 return null;
@@ -133,7 +130,7 @@ namespace Tesseract.Core.Job.Implementation
                 catch (Exception e)
                 {
                     // TODO Log error details
-                    var newRunner = Composer.GetComponent<FaultyJobRunner>()
+                    var newRunner = _serviceProvider.GetService<FaultyJobRunner>()
                         .SetFault($"Fatal exception of type {e.GetType().Name} during runner initialization. " +
                                   $"Message: {e.Message}", e);
 
@@ -148,20 +145,20 @@ namespace Tesseract.Core.Job.Implementation
             var stepType = Type.GetType(jobData.JobStepType);
             if (stepType == null)
             {
-                return Composer.GetComponent<FaultyJobRunner>()
+                return _serviceProvider.GetService<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' could not be loaded.");
             }
 
             if (!stepType.IsSubclassOf(typeof(JobStepBase)))
             {
-                return Composer.GetComponent<FaultyJobRunner>()
+                return _serviceProvider.GetService<FaultyJobRunner>()
                     .SetFault($"Type '{jobData.JobStepType}' should be a subclass of {nameof(JobStepBase)}.");
             }
 
             var contract = typeof(IJobRunner<>).MakeGenericType(stepType);
-            if (!(Composer.GetComponent(contract) is IJobRunner jobRunner))
+            if (!(_serviceProvider.GetService(contract) is IJobRunner jobRunner))
             {
-                return Composer.GetComponent<FaultyJobRunner>()
+                return _serviceProvider.GetService<FaultyJobRunner>()
                     .SetFault($"Composer did not return an appropriate result for type '{jobData.JobStepType}'");
             }
 
@@ -175,7 +172,7 @@ namespace Tesseract.Core.Job.Implementation
 
         private void RemoveRunnerFromList(string jobId)
         {
-            _runners.TryRemove(jobId, out var _);
+            _runners.TryRemove(jobId, out _);
         }
     }
 }

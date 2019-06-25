@@ -2,16 +2,20 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
-using ComposerCore.Cache;
 using Tesseract.Common.Extensions;
 
 namespace Tesseract.Core.Queue.Implementation
 {
-    [Contract]
-    [Component]
-    [ComponentCache(typeof(ContractAgnosticComponentCache))]
-    [IgnoredOnAssemblyRegistration]
+    /// <summary>
+    /// This type was not automatically registered in the original code
+    /// since the "Default" DI container for .netcore does not support named registration
+    /// we are omitting the registration altogether
+    /// </summary>
+
+    //[Contract]
+    //[Component]
+    //[ComponentCache(typeof(ContractAgnosticComponentCache))]
+    //[IgnoredOnAssemblyRegistration]
     public class InMemoryJobQueue<TItem> : IJobQueue<TItem> where TItem : JobStepBase
     {
         private readonly object _lockObject;

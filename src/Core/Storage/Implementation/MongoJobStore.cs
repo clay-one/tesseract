@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using MongoDB.Driver;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Connection;
@@ -9,18 +8,21 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage.Implementation
 {
-    [Component]
     public class MongoJobStore : IJobStore
     {
         private const int NumberOfExceptionsToKeep = 20;
         private const int NumberOfFailuresToKeep = 20;
 
-        [ComponentPlug]
-        public IMongoManager Mongo { get; set; }
+        private readonly IMongoManager _mongo;
+
+        public MongoJobStore(IMongoManager mongoManager)
+        {
+            _mongo = mongoManager;
+        }
 
         public async Task<List<JobData>> LoadAll(string tenantId)
         {
-            var cursor = await Mongo.Jobs.FindAsync(
+            var cursor = await _mongo.Jobs.FindAsync(
                 Builders<JobData>.Filter.Eq(jd => jd.TenantId, tenantId)
             );
             return await cursor.ToListAsync();
@@ -33,7 +35,7 @@ namespace Tesseract.Core.Storage.Implementation
                 throw new ArgumentNullException(nameof(jobId));
             }
 
-            var cursor = await Mongo.Jobs.FindAsync(jd => jd.JobId == jobId && jd.TenantId == tenantId);
+            var cursor = await _mongo.Jobs.FindAsync(jd => jd.JobId == jobId && jd.TenantId == tenantId);
             return await cursor.FirstOrDefaultAsync();
         }
 
@@ -44,7 +46,7 @@ namespace Tesseract.Core.Storage.Implementation
                 throw new ArgumentNullException(nameof(jobId));
             }
 
-            var cursor = await Mongo.Jobs.FindAsync(
+            var cursor = await _mongo.Jobs.FindAsync(
                 Builders<JobData>.Filter.And(
                     Builders<JobData>.Filter.Eq(jd => jd.TenantId, tenantId),
                     Builders<JobData>.Filter.Eq(jd => jd.JobId, jobId)
@@ -54,7 +56,6 @@ namespace Tesseract.Core.Storage.Implementation
                     Projection = Builders<JobData>.Projection.Expression(jd => jd.Status)
                 }
             );
-            ;
             return await cursor.FirstOrDefaultAsync();
         }
 
@@ -65,13 +66,13 @@ namespace Tesseract.Core.Storage.Implementation
                 throw new ArgumentNullException(nameof(jobId));
             }
 
-            var cursor = await Mongo.Jobs.FindAsync(jd => jd.JobId == jobId);
+            var cursor = await _mongo.Jobs.FindAsync(jd => jd.JobId == jobId);
             return await cursor.FirstOrDefaultAsync();
         }
 
         public async Task<List<string>> LoadAllRunnableIdsFromAnyTenant()
         {
-            var cursor = await Mongo.Jobs.FindAsync(
+            var cursor = await _mongo.Jobs.FindAsync(
                 Builders<JobData>.Filter.And(
                     Builders<JobData>.Filter.Gte(jd => jd.Status.State, JobState.InProgress),
                     Builders<JobData>.Filter.Lt(jd => jd.Status.State, JobState.Completed)),
@@ -100,7 +101,7 @@ namespace Tesseract.Core.Storage.Implementation
                 .SetOnInsert(jd => jd.Status, jobData.Status)
                 .Set(jd => jd.Configuration, jobData.Configuration);
 
-            return await Mongo.Jobs.FindOneAndUpdateAsync(filter, update,
+            return await _mongo.Jobs.FindOneAndUpdateAsync(filter, update,
                 new FindOneAndUpdateOptions<JobData> {IsUpsert = true, ReturnDocument = ReturnDocument.After});
         }
 
@@ -112,14 +113,14 @@ namespace Tesseract.Core.Storage.Implementation
 
             if (expectedState.HasValue)
             {
-                return (await Mongo.Jobs.UpdateOneAsync(jd =>
+                return (await _mongo.Jobs.UpdateOneAsync(jd =>
                                jd.TenantId == tenantId &&
                                jd.JobId == jobId &&
                                jd.Status.State == expectedState.Value,
                            update)).ModifiedCount > 0;
             }
 
-            return (await Mongo.Jobs.UpdateOneAsync(jd => jd.TenantId == tenantId && jd.JobId == jobId, update))
+            return (await _mongo.Jobs.UpdateOneAsync(jd => jd.TenantId == tenantId && jd.JobId == jobId, update))
                    .ModifiedCount > 0;
         }
 
@@ -151,7 +152,7 @@ namespace Tesseract.Core.Storage.Implementation
                 update = update.PushEach(jd => jd.Status.LastFailures, change.LastFailures, -NumberOfFailuresToKeep);
             }
 
-            await Mongo.Jobs.UpdateOneAsync(filter, update);
+            await _mongo.Jobs.UpdateOneAsync(filter, update);
         }
 
         public async Task AddException(string tenantId, string jobId, JobStatusErrorData exceptionData)
@@ -165,7 +166,7 @@ namespace Tesseract.Core.Storage.Implementation
                 .Max(jd => jd.Status.LastExceptionTime, DateTime.UtcNow)
                 .PushEach(jd => jd.Status.LastExceptions, exceptionData.Yield(), -NumberOfExceptionsToKeep);
 
-            await Mongo.Jobs.UpdateOneAsync(filter, update);
+            await _mongo.Jobs.UpdateOneAsync(filter, update);
         }
 
         public async Task<bool> AddPredecessor(string tenantId, string jobId, string predecessorJobId)
@@ -173,7 +174,7 @@ namespace Tesseract.Core.Storage.Implementation
             var update = Builders<JobData>.Update
                 .Push(jd => jd.Configuration.PreprocessorJobIds, predecessorJobId);
 
-            return (await Mongo.Jobs.UpdateOneAsync(jd =>
+            return (await _mongo.Jobs.UpdateOneAsync(jd =>
                            jd.TenantId == tenantId &&
                            jd.JobId == jobId &&
                            jd.Status.State < JobState.InProgress,

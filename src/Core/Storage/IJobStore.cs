@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage
 {
-    [Contract]
     public interface IJobStore
     {
         Task<List<JobData>> LoadAll(string tenantId);

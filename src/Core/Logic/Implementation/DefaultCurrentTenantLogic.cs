@@ -1,19 +1,20 @@
 ﻿using System;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Attributes;
 using Tesseract.Core.Context;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultCurrentTenantLogic : ICurrentTenantLogic
     {
+        private readonly IServiceProvider _serviceProvider;
         private const string TenantInfoContextKey = "fanap.identity.tenant-info";
 
-        [ComponentPlug]
-        public IComposer Composer { get; set; }
+
+        public DefaultCurrentTenantLogic(IServiceProvider serviceProvider)
+        {
+            _serviceProvider = serviceProvider;
+        }
 
         public void InitializeInfo(string tenantId)
         {
@@ -24,7 +25,7 @@ namespace Tesseract.Core.Logic.Implementation
         public Task PopulateInfo()
         {
             // no await, no async. Just pass the task from the inner call.
-            return GetTenantInfo().Initialize(Composer);
+            return GetTenantInfo().Initialize(_serviceProvider);
         }
 
         public string Id => GetTenantInfo().Id;

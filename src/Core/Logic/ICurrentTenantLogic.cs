@@ -1,10 +1,8 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic
 {
-    [Contract]
     public interface ICurrentTenantLogic
     {
         string Id { get; }
