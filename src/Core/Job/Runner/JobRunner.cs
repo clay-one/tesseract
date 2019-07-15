@@ -13,12 +13,7 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job.Runner
 {
-    public class JobRunner
-    {
-        //protected static readonly ILogger<JobRunner> Logger = LogManager.GetCurrentClassLogger();
-    }
-
-    public class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : JobStepBase
+    public class JobRunner<TJobStep> : IJobRunner<TJobStep> where TJobStep : JobStepBase
     {
         private const int WaitMillisWhenTargetQueueIsFull = 1000;
         private const int WaitMillisWhenThereIsNoMoreWork = 2000;
