@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
@@ -15,9 +16,12 @@ namespace Tesseract.Web
     {
         private readonly ILogger<Startup> _logger;
 
-        public Startup(ILogger<Startup> logger)
+        public IConfigurationRoot Configuration { get; }
+
+        public Startup(ILogger<Startup> logger, IConfigurationRoot configuration)
         {
             _logger = logger;
+            Configuration = configuration;
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -32,6 +36,10 @@ namespace Tesseract.Web
                         options.SerializerSettings.ContractResolver = new CamelCasePropertyNamesContractResolver();
                         options.SerializerSettings.DateFormatHandling = DateFormatHandling.IsoDateFormat;
                     });
+
+                services.Configure<MongoDbConfig>(Configuration.GetSection("MongoDb"));
+                services.Configure<RedisConfig>(Configuration.GetSection("Redis"));
+                services.Configure<ElasticsearchConfig>(Configuration.GetSection("Elasticsearch"));
 
                 services.AddCorrelationId();
                 services.AddTesseractCoreServices();
