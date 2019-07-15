@@ -1,27 +1,28 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
 using Tesseract.Core.Index;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultIndexLogic : IIndexLogic
     {
-        [ComponentPlug]
-        public IAccountIndexReader AccountIndex { get; set; }
+        private readonly IAccountIndexReader _accountIndex;
+        private readonly ICurrentTenantLogic _tenant;
 
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        public DefaultIndexLogic(IAccountIndexReader accountIndexReader, ICurrentTenantLogic tenantLogic)
+        {
+            _accountIndex = accountIndexReader;
+            _tenant = tenantLogic;
+        }
 
         public async Task<long> Count(AccountQuery query)
         {
-            return await AccountIndex.Count(Tenant.Id, query);
+            return await _accountIndex.Count(_tenant.Id, query);
         }
 
         public async Task<AccountQueryResultPage> List(AccountQuery query, int count, string continueFrom)
         {
-            return await AccountIndex.List(Tenant.Id, query, count, continueFrom);
+            return await _accountIndex.List(_tenant.Id, query, count, continueFrom);
         }
     }
 }

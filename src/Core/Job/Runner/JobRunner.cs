@@ -4,7 +4,6 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using NLog;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.Queue;
@@ -18,8 +17,6 @@ namespace Tesseract.Core.Job.Runner
         protected static readonly Logger Logger = LogManager.GetCurrentClassLogger();
     }
 
-    [Component]
-    [ComponentCache(null)]
     public class JobRunner<TJobStep> : JobRunner, IJobRunner<TJobStep> where TJobStep : JobStepBase
     {
         private const int WaitMillisWhenTargetQueueIsFull = 1000;
@@ -52,7 +49,6 @@ namespace Tesseract.Core.Job.Runner
         private volatile bool _terminated;
         private ThrottleCalculator _throttleCalculator;
 
-        [CompositionConstructor]
         public JobRunner(IJobQueue<TJobStep> queue, IJobProcessor<TJobStep> processor, IJobStore jobStore,
             IJobRunnerManager jobRunnerManager, JobStatisticsCalculator statistics, IJobNotification jobNotification)
         {

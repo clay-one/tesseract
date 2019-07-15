@@ -1,11 +1,9 @@
 ﻿using System.Collections.Generic;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Logic
 {
-    [Contract]
     public interface IInputValidationLogic
     {
         ApiValidationError ValidateTag(string tag);

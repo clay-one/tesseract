@@ -2,14 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Extensions;
 using Tesseract.Common.Results;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultInputValidationLogic : IInputValidationLogic
     {
         private const int MaxAccountIdLength = 50;
@@ -23,8 +21,12 @@ namespace Tesseract.Core.Logic.Implementation
         private static readonly Regex TagRegex = new Regex("^[\\w\\-\\:]*$");
         private static readonly Regex FieldNameRegex = new Regex("^[\\w\\-]*$");
 
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        private readonly ICurrentTenantLogic _tenant;
+
+        public DefaultInputValidationLogic(ICurrentTenantLogic tenantLogic)
+        {
+            _tenant = tenantLogic;
+        }
 
         public ApiValidationError ValidateTag(string tag)
         {
@@ -68,7 +70,7 @@ namespace Tesseract.Core.Logic.Implementation
             var result = ValidateTagNs(ns);
             if (result != null) return result;
 
-            return Tenant.DoesTagNsExist(ns)
+            return _tenant.DoesTagNsExist(ns)
                 ? null
                 : new ApiValidationError(nameof(ns), ErrorKeys.TagNamespaceIsNotDefined);
         }
@@ -103,7 +105,7 @@ namespace Tesseract.Core.Logic.Implementation
             var result = ValidateFieldName(fieldName);
             if (result != null) return result;
 
-            return Tenant.DoesFieldExist(fieldName)
+            return _tenant.DoesFieldExist(fieldName)
                 ? null
                 : new ApiValidationError(nameof(fieldName), ErrorKeys.FieldIsNotDefined);
         }

@@ -2,16 +2,12 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Threading;
-using ComposerCore.Attributes;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job.Runner
 {
-    [Contract]
-    [Component]
-    [ComponentCache(null)]
     public class JobStatisticsCalculator
     {
         private const int SecondsBetweenFlushes = 4;
@@ -38,7 +34,6 @@ namespace Tesseract.Core.Job.Runner
         private long _unflushedProcessingTimeTakenMillis;
 
 
-        [CompositionConstructor]
         public JobStatisticsCalculator(IJobStore jobStore)
         {
             _jobStore = jobStore;

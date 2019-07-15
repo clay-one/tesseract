@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Extensions;
@@ -11,29 +10,30 @@ using Tesseract.Core.Storage;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultTaggingLogic : ITaggingLogic
     {
-        [ComponentPlug]
-        public IAccountStore AccountStore { get; set; }
+        private readonly IAccountStore _accountStore;
+        private readonly IJobQueue<AccountIndexingStep> _accountIndexingQueue;
+        private readonly ICurrentTenantLogic _tenant;
 
-        [ComponentPlug]
-        public IJobQueue<AccountIndexingStep> AccountIndexingQueue { get; set; }
-
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        public DefaultTaggingLogic(IAccountStore accountStore, IJobQueue<AccountIndexingStep> queue, ICurrentTenantLogic tenantLogic)
+        {
+            _accountStore = accountStore;
+            _accountIndexingQueue = queue;
+            _tenant = tenantLogic;
+        }
 
         public async Task AddTag(string accountId, string ns, string tag)
         {
             // In case account exists, but the tag is not present
-            await AccountStore.SetTagWeightIfTagDoesntExist(Tenant.Id, accountId, ns, tag, 1.0d);
+            await _accountStore.SetTagWeightIfTagDoesntExist(_tenant.Id, accountId, ns, tag, 1.0d);
 
             // In case account doesn't exist at all
-            await AccountStore.SetTagWeightIfAccountDoesntExist(Tenant.Id, accountId, ns, tag, 1.0d);
+            await _accountStore.SetTagWeightIfAccountDoesntExist(_tenant.Id, accountId, ns, tag, 1.0d);
 
-            await AccountIndexingQueue.Enqueue(new AccountIndexingStep
+            await _accountIndexingQueue.Enqueue(new AccountIndexingStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 AccountId = accountId
             });
         }
@@ -42,9 +42,9 @@ namespace Tesseract.Core.Logic.Implementation
         {
             // ReSharper disable once CompareOfFloatsByEqualityOperator - we get zero as input and want to compare it to exact zero.
             if (weight <= 0d)
-                await AccountStore.RemoveTags(Tenant.Id, accountId, new FqTag {Ns = ns, Tag = tag}.Yield());
+                await _accountStore.RemoveTags(_tenant.Id, accountId, new FqTag { Ns = ns, Tag = tag }.Yield());
             else
-                await AccountStore.ChangeAccount(Tenant.Id, accountId, new PatchAccountRequest
+                await _accountStore.ChangeAccount(_tenant.Id, accountId, new PatchAccountRequest
                 {
                     TagChanges = new List<AccountTagChangeInstruction>
                     {
@@ -52,29 +52,29 @@ namespace Tesseract.Core.Logic.Implementation
                     }
                 });
 
-            await AccountIndexingQueue.Enqueue(new AccountIndexingStep
+            await _accountIndexingQueue.Enqueue(new AccountIndexingStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 AccountId = accountId
             });
         }
 
         public async Task ReplaceTagNs(string accountId, string ns, IEnumerable<KeyValuePair<string, double>> tags)
         {
-            await AccountStore.RemoveTagNs(Tenant.Id, accountId, ns);
+            await _accountStore.RemoveTagNs(_tenant.Id, accountId, ns);
 
             if (tags != null)
-                await AccountStore.ChangeAccount(Tenant.Id, accountId, new PatchAccountRequest
+                await _accountStore.ChangeAccount(_tenant.Id, accountId, new PatchAccountRequest
                 {
                     TagChanges = tags
                         .Where(t => t.Value > 0d)
-                        .Select(t => new AccountTagChangeInstruction {TagNs = ns, Tag = t.Key, Weight = t.Value})
+                        .Select(t => new AccountTagChangeInstruction { TagNs = ns, Tag = t.Key, Weight = t.Value })
                         .ToList()
                 });
 
-            await AccountIndexingQueue.Enqueue(new AccountIndexingStep
+            await _accountIndexingQueue.Enqueue(new AccountIndexingStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 AccountId = accountId
             });
         }

@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Tags;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage
 {
-    [Contract]
     public interface ITagNsDefinitionStore
     {
         Task<List<TagNsDefinitionData>> LoadAll(string tenantId);

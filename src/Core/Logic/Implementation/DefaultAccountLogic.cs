@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Accounts;
 using Tesseract.ApiModel.General;
 using Tesseract.Common.Extensions;
@@ -11,24 +10,25 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultAccountLogic : IAccountLogic
     {
-        [ComponentPlug]
-        public IAccountStore AccountStore { get; set; }
+        private readonly IAccountStore _accountStore;
+        private readonly IJobQueue<AccountIndexingStep> _accountIndexingQueue;
+        private readonly ICurrentTenantLogic _tenant;
 
-        [ComponentPlug]
-        public IJobQueue<AccountIndexingStep> AccountIndexingQueue { get; set; }
-
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        public DefaultAccountLogic(IAccountStore accountStore, IJobQueue<AccountIndexingStep> accountIndexingQueue, ICurrentTenantLogic tenantLogic)
+        {
+            _accountStore = accountStore;
+            _accountIndexingQueue = accountIndexingQueue;
+            _tenant = tenantLogic;
+        }
 
         public async Task<AccountData> PatchAccount(string accountId, PatchAccountRequest patch)
         {
             var removedTags = patch.TagChanges?.Where(tc => tc.Weight <= 0d).ToList();
             var maybeRemovedTags = patch.TagPatches?.Where(tp => tp.WeightDelta < 0d).ToList();
 
-            var accountInfo = await AccountStore.ChangeAccount(Tenant.Id, accountId, new PatchAccountRequest
+            var accountInfo = await _accountStore.ChangeAccount(_tenant.Id, accountId, new PatchAccountRequest
             {
                 TagChanges = patch.TagChanges?.Where(tc => tc.Weight > 0d).ToList(),
                 TagPatches = patch.TagPatches,
@@ -37,17 +37,17 @@ namespace Tesseract.Core.Logic.Implementation
             });
 
             if (removedTags.SafeAny())
-                accountInfo = await AccountStore.RemoveTags(Tenant.Id, accountId,
-                    removedTags?.Select(t => new FqTag {Ns = t.TagNs, Tag = t.Tag}).ToList());
+                accountInfo = await _accountStore.RemoveTags(_tenant.Id, accountId,
+                    removedTags?.Select(t => new FqTag { Ns = t.TagNs, Tag = t.Tag }).ToList());
 
             await Task.WhenAll(maybeRemovedTags.EmptyIfNull().Select(async t =>
             {
-                accountInfo = await AccountStore.RemoveTagIfNotPositive(Tenant.Id, accountId, t.TagNs, t.Tag);
+                accountInfo = await _accountStore.RemoveTagIfNotPositive(_tenant.Id, accountId, t.TagNs, t.Tag);
             }));
 
-            await AccountIndexingQueue.Enqueue(new AccountIndexingStep
+            await _accountIndexingQueue.Enqueue(new AccountIndexingStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 AccountId = accountId
             });
 
@@ -56,9 +56,9 @@ namespace Tesseract.Core.Logic.Implementation
 
         public async Task QueueForReindex(string accountId)
         {
-            await AccountIndexingQueue.Enqueue(new AccountIndexingStep
+            await _accountIndexingQueue.Enqueue(new AccountIndexingStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 AccountId = accountId
             });
         }

@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Fields;
 using Tesseract.ApiModel.Tags;
 using Tesseract.Core.Connection;
@@ -9,20 +8,25 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultDefinitionLogic : IDefinitionLogic
     {
-        [ComponentPlug]
         public ITagNsDefinitionStore TagNsDefinitionStore { get; set; }
 
-        [ComponentPlug]
         public IFieldDefinitionStore FieldDefinitionStore { get; set; }
 
-        [ComponentPlug]
         public IEsManager EsManager { get; set; }
 
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        private readonly ICurrentTenantLogic Tenant;
+
+        public DefaultDefinitionLogic(ITagNsDefinitionStore tagNsDefinitionStore,
+            IFieldDefinitionStore fieldDefinitionStore,
+            IEsManager esManager, ICurrentTenantLogic tenantLogic)
+        {
+            TagNsDefinitionStore = tagNsDefinitionStore;
+            FieldDefinitionStore = fieldDefinitionStore;
+            EsManager = esManager;
+            Tenant = tenantLogic;
+        }
 
         public async Task<List<TagNsDefinitionData>> LoadAllNsDefinitions()
         {

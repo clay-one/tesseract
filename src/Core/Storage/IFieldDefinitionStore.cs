@@ -1,12 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Fields;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage
 {
-    [Contract]
     public interface IFieldDefinitionStore
     {
         Task<List<FieldDefinitionData>> LoadAll(string tenantId);

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using MongoDB.Driver;
 using Tesseract.ApiModel.Tags;
 using Tesseract.Core.Connection;
@@ -9,17 +8,20 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage.Implementation
 {
-    [Component]
     public class MongoTagNsDefinitionStore : ITagNsDefinitionStore
     {
-        [ComponentPlug]
-        public IMongoManager Mongo { get; set; }
+        private readonly IMongoManager _mongo;
+
+        public MongoTagNsDefinitionStore(IMongoManager mongo)
+        {
+            _mongo = mongo;
+        }
 
         public async Task<List<TagNsDefinitionData>> LoadAll(string tenantId)
         {
             var filter = Builders<TagNsDefinitionData>.Filter.Eq(nsdd => nsdd.TenantId, tenantId);
 
-            var cursor = await Mongo.TagNsDefinitions.FindAsync(filter);
+            var cursor = await _mongo.TagNsDefinitions.FindAsync(filter);
             return await cursor.ToListAsync();
         }
 
@@ -30,7 +32,7 @@ namespace Tesseract.Core.Storage.Implementation
                 Builders<TagNsDefinitionData>.Filter.Eq(nsdd => nsdd.Namespace, ns)
             );
 
-            var cursor = await Mongo.TagNsDefinitions.FindAsync(filter);
+            var cursor = await _mongo.TagNsDefinitions.FindAsync(filter);
             return await cursor.FirstOrDefaultAsync();
         }
 
@@ -55,7 +57,7 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(nsdd => nsdd.LastModifiedBy, "unknown")
                 .Set(nsdd => nsdd.KeepHistory, data.KeepHistory);
 
-            return await Mongo.TagNsDefinitions.FindOneAndUpdateAsync(filter, update,
+            return await _mongo.TagNsDefinitions.FindOneAndUpdateAsync(filter, update,
                 new FindOneAndUpdateOptions<TagNsDefinitionData>
                 {
                     IsUpsert = true,
@@ -70,7 +72,7 @@ namespace Tesseract.Core.Storage.Implementation
                 Builders<TagNsDefinitionData>.Filter.Eq(nsdd => nsdd.Namespace, ns)
             );
 
-            return await Mongo.TagNsDefinitions.FindOneAndDeleteAsync(filter);
+            return await _mongo.TagNsDefinitions.FindOneAndDeleteAsync(filter);
         }
     }
 }

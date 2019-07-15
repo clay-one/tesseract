@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.Fields;
 using Tesseract.ApiModel.Tags;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic
 {
-    [Contract]
     public interface IDefinitionLogic
     {
         Task<List<TagNsDefinitionData>> LoadAllNsDefinitions();

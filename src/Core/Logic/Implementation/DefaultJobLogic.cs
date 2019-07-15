@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using ComposerCore;
-using ComposerCore.Attributes;
 using ServiceStack;
 using Tesseract.ApiModel.General;
 using Tesseract.ApiModel.Jobs;
@@ -14,42 +12,42 @@ using Tesseract.Core.JobTypes.HttpPush;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tesseract.Core.Logic.Implementation
 {
-    [Component]
     public class DefaultJobLogic : IJobLogic
     {
-        [ComponentPlug]
-        public ICurrentTenantLogic Tenant { get; set; }
+        private readonly ICurrentTenantLogic _tenant;
+        private readonly IJobManager _jobManager;
+        private readonly IJobStore _jobStore;
+        private readonly IServiceProvider _serviceProvider;
 
-        [ComponentPlug]
-        public IJobManager JobManager { get; set; }
-
-        [ComponentPlug]
-        public IJobStore JobStore { get; set; }
-
-        [ComponentPlug]
-        public IComposer Composer { get; set; }
+        public DefaultJobLogic(IJobStore jobStore, IJobManager jobManager, ICurrentTenantLogic tenantLogic)
+        {
+            _tenant = tenantLogic;
+            _jobManager = jobManager;
+            _jobStore = jobStore;
+        }
 
         public async Task<List<JobData>> LoadAllJobs()
         {
-            return await JobStore.LoadAll(Tenant.Id);
+            return await _jobStore.LoadAll(_tenant.Id);
         }
 
         public async Task<JobData> LoadJob(string jobId)
         {
-            return await JobStore.Load(Tenant.Id, jobId);
+            return await _jobStore.Load(_tenant.Id, jobId);
         }
 
         public async Task<long> GetQueueLength(string jobId)
         {
-            return await JobManager.GetQueueLength(Tenant.Id, jobId);
+            return await _jobManager.GetQueueLength(_tenant.Id, jobId);
         }
 
         public async Task<string> CreateReindexAllJob()
         {
-            var jobId = await JobManager.CreateNewJobOrUpdateDefinition<FetchForReindexStep>(Tenant.Id,
+            var jobId = await _jobManager.CreateNewJobOrUpdateDefinition<FetchForReindexStep>(_tenant.Id,
                 "reindex-all",
                 configuration: new JobConfigurationData
                 {
@@ -62,13 +60,15 @@ namespace Tesseract.Core.Logic.Implementation
 
             var initialStep = new FetchForReindexStep
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 RangeStart = null,
                 RangeEnd = null,
                 LastAccountId = null
             };
 
-            await Composer.GetComponent<IJobQueue<FetchForReindexStep>>().Enqueue(initialStep, jobId);
+            var jobQueue = _serviceProvider.GetService<IJobQueue<FetchForReindexStep>>();
+
+            await jobQueue.Enqueue(initialStep, jobId);
 
             return jobId;
         }
@@ -80,14 +80,14 @@ namespace Tesseract.Core.Logic.Implementation
 
             var parameters = new FetchFromIndexParameters
             {
-                TenantId = Tenant.Id,
+                TenantId = _tenant.Id,
                 TargetJobId = targetJobId,
                 Query = query,
                 SliceCount = sliceCount,
                 MaxBatchSize = behavior?.MaxBatchSize ?? 1
             };
 
-            var jobId = await JobManager.CreateNewJobOrUpdateDefinition<FetchFromIndexStep>(Tenant.Id,
+            var jobId = await _jobManager.CreateNewJobOrUpdateDefinition<FetchFromIndexStep>(_tenant.Id,
                 displayName,
                 configuration: new JobConfigurationData
                 {
@@ -104,12 +104,12 @@ namespace Tesseract.Core.Logic.Implementation
                     // at least 5k (to avoid small batches of processing and spinning) and
                     // at most 100k (to avoid too much memory usage in queue)
                     MaxTargetQueueLength = Math.Max(5_000, Math.Min(100_000,
-                        (int) ((behavior?.AccountBatchesPerSecond ?? 10_000d) * 10))),
+                        (int)((behavior?.AccountBatchesPerSecond ?? 10_000d) * 10))),
 
                     Parameters = parameters.ToJson()
                 });
 
-            await JobManager.AddPredecessor(Tenant.Id, targetJobId, jobId);
+            await _jobManager.AddPredecessor(_tenant.Id, targetJobId, jobId);
 
             var initialSteps = Enumerable.Range(0, sliceCount).Select(sliceId =>
                 new FetchFromIndexStep
@@ -119,7 +119,10 @@ namespace Tesseract.Core.Logic.Implementation
                     Sequence = 0
                 });
 
-            await Composer.GetComponent<IJobQueue<FetchFromIndexStep>>().EnqueueBatch(initialSteps, jobId);
+            var jobQueue = _serviceProvider.GetService<IJobQueue<FetchFromIndexStep>>();
+
+            await jobQueue.EnqueueBatch(initialSteps, jobId);
+
             return jobId;
         }
 
@@ -150,7 +153,7 @@ namespace Tesseract.Core.Logic.Implementation
                 RetryDelaySeconds = target.RetryDelaySeconds ?? 0
             };
 
-            var jobId = await JobManager.CreateNewJobOrUpdateDefinition<HttpPushStep>(Tenant.Id,
+            var jobId = await _jobManager.CreateNewJobOrUpdateDefinition<HttpPushStep>(_tenant.Id,
                 displayName,
                 configuration: new JobConfigurationData
                 {
@@ -160,7 +163,7 @@ namespace Tesseract.Core.Logic.Implementation
 
                     // Half-a-second worth of burst
                     ThrottledMaxBurstSize = behavior?.AccountBatchesPerSecond != null
-                        ? (int?) Math.Max(1, (int) (behavior.AccountBatchesPerSecond / 2d))
+                        ? (int?)Math.Max(1, (int)(behavior.AccountBatchesPerSecond / 2d))
                         : null,
 
                     // Expire after a day, if not specified when

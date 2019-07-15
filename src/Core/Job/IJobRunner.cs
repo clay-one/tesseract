@@ -1,5 +1,4 @@
 ﻿using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Storage.Model;
 
@@ -15,7 +14,6 @@ namespace Tesseract.Core.Job
         void StopRunner();
     }
 
-    [Contract]
     public interface IJobRunner<TJobStep> : IJobRunner where TJobStep : JobStepBase
     {
     }

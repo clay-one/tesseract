@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using MongoDB.Driver;
 using Tesseract.ApiModel.Fields;
 using Tesseract.Core.Connection;
@@ -9,17 +8,20 @@ using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Storage.Implementation
 {
-    [Component]
     public class MongoFieldDefinitionStore : IFieldDefinitionStore
     {
-        [ComponentPlug]
-        public IMongoManager Mongo { get; set; }
+        private readonly IMongoManager _mongo;
+
+        public MongoFieldDefinitionStore(IMongoManager mongo)
+        {
+            _mongo = mongo;
+        }
 
         public async Task<List<FieldDefinitionData>> LoadAll(string tenantId)
         {
             var filter = Builders<FieldDefinitionData>.Filter.Eq(nsdd => nsdd.TenantId, tenantId);
 
-            var cursor = await Mongo.FieldDefinitions.FindAsync(filter);
+            var cursor = await _mongo.FieldDefinitions.FindAsync(filter);
             return await cursor.ToListAsync();
         }
 
@@ -30,7 +32,7 @@ namespace Tesseract.Core.Storage.Implementation
                 Builders<FieldDefinitionData>.Filter.Eq(nsdd => nsdd.FieldName, fieldName)
             );
 
-            var cursor = await Mongo.FieldDefinitions.FindAsync(filter);
+            var cursor = await _mongo.FieldDefinitions.FindAsync(filter);
             return await cursor.FirstOrDefaultAsync();
         }
 
@@ -56,7 +58,7 @@ namespace Tesseract.Core.Storage.Implementation
                 .Set(fdd => fdd.LastModifiedBy, "unknown")
                 .Set(fdd => fdd.KeepHistory, data.KeepHistory);
 
-            return await Mongo.FieldDefinitions.FindOneAndUpdateAsync(filter, update,
+            return await _mongo.FieldDefinitions.FindOneAndUpdateAsync(filter, update,
                 new FindOneAndUpdateOptions<FieldDefinitionData>
                 {
                     IsUpsert = true,
@@ -71,7 +73,7 @@ namespace Tesseract.Core.Storage.Implementation
                 Builders<FieldDefinitionData>.Filter.Eq(nsdd => nsdd.FieldName, fieldName)
             );
 
-            return await Mongo.FieldDefinitions.FindOneAndDeleteAsync(filter);
+            return await _mongo.FieldDefinitions.FindOneAndDeleteAsync(filter);
         }
     }
 }

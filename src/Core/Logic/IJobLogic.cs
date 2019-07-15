@@ -1,13 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.ApiModel.General;
 using Tesseract.ApiModel.Jobs;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic
 {
-    [Contract]
     public interface IJobLogic
     {
         Task<List<JobData>> LoadAllJobs();

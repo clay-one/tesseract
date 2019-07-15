@@ -1,10 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 
 namespace Tesseract.Core.Logic
 {
-    [Contract]
     public interface ITaggingLogic
     {
         Task AddTag(string accountId, string ns, string tag);

@@ -1,26 +1,26 @@
 ﻿using System;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using Tesseract.Core.Storage;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Job.Runner
 {
-    [Contract]
-    [Component]
-    [ComponentCache(null)]
     public class FaultyJobRunner : IJobRunner
     {
         private string _errorMessage;
         private Exception _exception;
 
-        [ComponentPlug]
         public IJobStore JobStore { get; set; }
 
         public string TenantId { get; private set; }
         public string JobId { get; private set; }
         public bool IsProcessRunning => false;
         public bool IsProcessTerminated => true;
+
+        public FaultyJobRunner(IJobStore jobStore)
+        {
+            JobStore = jobStore;
+        }
 
         public void Initialize(JobData jobData)
         {

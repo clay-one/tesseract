@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
-using ComposerCore.Attributes;
 using ServiceStack;
 using Tesseract.ApiModel.General;
 using Tesseract.ApiModel.Push;
@@ -17,8 +16,6 @@ using Tesseract.Core.Utility;
 
 namespace Tesseract.Core.JobTypes.HttpPush
 {
-    [Component]
-    [ComponentCache(null)]
     public class HttpPushProcessor : IJobProcessor<HttpPushStep>
     {
         private HttpClient _client;
@@ -26,11 +23,15 @@ namespace Tesseract.Core.JobTypes.HttpPush
         private HttpPushParameters _parameters;
         private string _tenantId;
 
-        [ComponentPlug]
-        public IJobQueue<PushStepBase> PushQueue { get; set; }
+        private readonly IJobQueue<PushStepBase> _pushQueue;
 
-        [ComponentPlug]
-        public IAccountStore AccountStore { get; set; }
+        private readonly IAccountStore _accountStore;
+
+        public HttpPushProcessor(IJobQueue<PushStepBase> pushQueue, IAccountStore accountStore)
+        {
+            _pushQueue = pushQueue;
+            _accountStore = accountStore;
+        }
 
         public void Initialize(JobData jobData)
         {
@@ -64,10 +65,10 @@ namespace Tesseract.Core.JobTypes.HttpPush
                 var secondsSinceLastAttempt = (DateTime.UtcNow - step.LastAttemptTime.Value).TotalSeconds;
                 if (secondsSinceLastAttempt < _parameters.RetryDelaySeconds)
                 {
-                    await PushQueue.Enqueue(step, _jobId);
+                    await _pushQueue.Enqueue(step, _jobId);
                     await Task.Delay(1000);
 
-                    return new JobProcessingResult {ItemsRequeued = 1};
+                    return new JobProcessingResult { ItemsRequeued = 1 };
                 }
             }
 
@@ -87,7 +88,7 @@ namespace Tesseract.Core.JobTypes.HttpPush
             // Instant retries are exhausted. Report failure, and re-queue if more retries are desired
 
             var result = new JobProcessingResult();
-            result.FailureMessages = new[] {failureMessage};
+            result.FailureMessages = new[] { failureMessage };
             result.ItemsFailed++;
 
             step.LastAttemptTime = DateTime.UtcNow;
@@ -98,7 +99,7 @@ namespace Tesseract.Core.JobTypes.HttpPush
                 return result;
             }
 
-            await PushQueue.Enqueue(step, _jobId);
+            await _pushQueue.Enqueue(step, _jobId);
             result.ItemsRequeued++;
 
             return result;
@@ -110,11 +111,11 @@ namespace Tesseract.Core.JobTypes.HttpPush
             {
                 return new PushedAccountInfoBatch
                 {
-                    Accounts = accountIds.Select(aid => new PushedAccountInfo {AccountId = aid}).ToList()
+                    Accounts = accountIds.Select(aid => new PushedAccountInfo { AccountId = aid }).ToList()
                 };
             }
 
-            var accountData = await AccountStore.LoadAccounts(_tenantId, accountIds);
+            var accountData = await _accountStore.LoadAccounts(_tenantId, accountIds);
             return new PushedAccountInfoBatch
             {
                 Accounts = accountData.Select(MapAccountInfo).ToList()
@@ -123,7 +124,7 @@ namespace Tesseract.Core.JobTypes.HttpPush
 
         private PushedAccountInfo MapAccountInfo(AccountData data)
         {
-            var result = new PushedAccountInfo {AccountId = data.AccountId};
+            var result = new PushedAccountInfo { AccountId = data.AccountId };
 
             if (_parameters.TagWeightsToInclude.SafeAny())
             {
