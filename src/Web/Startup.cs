@@ -50,7 +50,7 @@ namespace Tesseract.Web
             {
                 app.UseCorrelationId(new CorrelationIdOptions { IncludeInResponse = false });
                 app.UseMvc();
-                app.Run(async context => { await context.Response.WriteAsync("Hello World!"); });
+                app.Run(async context => { await context.Response.WriteAsync($"Tesseract ({env.EnvironmentName}) is up and running!"); });
             }
             catch (Exception e)
             {
