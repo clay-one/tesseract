@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.Extensions.Logging;
 using NLog;
 using Tesseract.Common.Extensions;
 using Tesseract.Core.JobTypes.AccountIndexing;
@@ -15,7 +16,7 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
     {
         private const int BatchSize = 500;
 
-        private static readonly Logger Logger = LogManager.GetCurrentClassLogger();
+        private readonly ILogger<FetchForReindexProcessor> Logger;
 
         private readonly List<char> _accountIdRangeChars =
             "02468acegikmoqsuwyACEGIKMOQSUWY_-~:"
@@ -24,11 +25,13 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
         private string _jobId;
 
         public FetchForReindexProcessor(IAccountStore accountStore, IJobQueue<AccountIndexingStep> indexQueue,
-            IJobQueue<FetchForReindexStep> fetchQueue)
+            IJobQueue<FetchForReindexStep> fetchQueue,
+            ILogger<FetchForReindexProcessor> logger)
         {
             _accountStore = accountStore;
             _indexQueue = indexQueue;
             _fetchQueue = fetchQueue;
+            Logger = logger;
         }
 
         private readonly IAccountStore _accountStore;
@@ -55,7 +58,7 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
 
         public async Task<JobProcessingResult> ProcessOne(FetchForReindexStep item)
         {
-            Logger.Debug($"ProcessOne: S='{item.RangeStart ?? ""}', " +
+            Logger.LogDebug($"ProcessOne: S='{item.RangeStart ?? ""}', " +
                          $"E='{item.RangeEnd ?? ""}', A='{item.LastAccountId ?? ""}'");
 
             var result = new JobProcessingResult();
@@ -70,12 +73,12 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
 
             if (accountIds.Any())
             {
-                Logger.Debug($"    => Fetched {accountIds.Count} items, " +
+                Logger.LogDebug($"    => Fetched {accountIds.Count} items, " +
                              $"from {accountIds[0]} to {accountIds[accountIds.Count - 1]}");
             }
             else
             {
-                Logger.Debug("    => Fetched nothing :(");
+                Logger.LogDebug("    => Fetched nothing :(");
             }
 
             if (accountIds.Count >= BatchSize)
@@ -83,11 +86,11 @@ namespace Tesseract.Core.JobTypes.FetchAllForReindex
                 var subRanges = CalculateRangeBreakdowns(item, accountIds[accountIds.Count - 1]);
                 await _fetchQueue.EnqueueBatch(subRanges, _jobId);
 
-                if (Logger.IsDebugEnabled)
+                if (Logger.IsEnabled(Microsoft.Extensions.Logging.LogLevel.Debug))
                 {
                     subRanges.ForEach(sr =>
                     {
-                        Logger.Debug($"    +  S='{sr.RangeStart ?? ""}', " +
+                        Logger.LogDebug($"    +  S='{sr.RangeStart ?? ""}', " +
                                      $"E='{sr.RangeEnd ?? ""}', A='{sr.LastAccountId ?? ""}'");
                     });
                 }
