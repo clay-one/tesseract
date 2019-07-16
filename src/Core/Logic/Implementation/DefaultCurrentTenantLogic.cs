@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using Tesseract.Core.Context;
+using Tesseract.Core.MultiTenancy;
 using Tesseract.Core.Storage.Model;
 
 namespace Tesseract.Core.Logic.Implementation
@@ -8,12 +9,15 @@ namespace Tesseract.Core.Logic.Implementation
     public class DefaultCurrentTenantLogic : ICurrentTenantLogic
     {
         private readonly IServiceProvider _serviceProvider;
-        private const string TenantInfoContextKey = "fanap.identity.tenant-info";
+        private readonly ITenantContextAccessor _tenantContextAccessor;
+
+        private static readonly TenantContextInfo FanapPlusTenant = new TenantContextInfo("fanap-plus");
 
 
-        public DefaultCurrentTenantLogic(IServiceProvider serviceProvider)
+        public DefaultCurrentTenantLogic(IServiceProvider serviceProvider, ITenantContextAccessor tenantContextAccessor)
         {
             _serviceProvider = serviceProvider;
+            _tenantContextAccessor = tenantContextAccessor;
         }
 
         public void InitializeInfo(string tenantId)
@@ -59,9 +63,10 @@ namespace Tesseract.Core.Logic.Implementation
 
         #region Private helper methods
 
-        private static TenantContextInfo GetTenantInfo()
+        private TenantContextInfo GetTenantInfo()
         {
-            throw new NotImplementedException();
+            var tenantContext = _tenantContextAccessor.TenantContext;
+            return tenantContext.Tenant;
         }
 
         private TenantContextInfo GetInitializedTenantInfo()
