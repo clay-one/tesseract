@@ -33,7 +33,7 @@ namespace Tesseract.Core.Index.Implementation
         {
             var countResult = await EsManager.Client.CountAsync<AccountIndexModel>(c => c
                 .Index(EsManager.GetTenantIndexName(tenantId))
-                .Type(typeof(AccountIndexModel))
+                //.Type(typeof(AccountIndexModel))
                 .Query(d => QueryBuilder.BuildEsQuery(null, query) ?? new MatchAllQuery())
             );
 
@@ -49,7 +49,7 @@ namespace Tesseract.Core.Index.Implementation
 
             var searchResult = await EsManager.Client.SearchAsync<AccountIndexModel>(s => s
                 .Index(EsManager.GetTenantIndexName(tenantId))
-                .Type(typeof(AccountIndexModel))
+                //.Type(typeof(AccountIndexModel))
                 .Query(d => QueryBuilder.BuildEsQuery(null, query) ?? new MatchAllQuery())
                 .Size(count + 1)
                 .Source(false)
@@ -76,7 +76,7 @@ namespace Tesseract.Core.Index.Implementation
         {
             var scrollResult = await EsManager.Client.SearchAsync<AccountIndexModel>(s => s
                 .Index(EsManager.GetTenantIndexName(tenantId))
-                .Type(typeof(AccountIndexModel))
+                //.Type(typeof(AccountIndexModel))
                 .Query(d => QueryBuilder.BuildEsQuery(null, query) ?? new MatchAllQuery())
                 .Size(count)
                 .Source(false)

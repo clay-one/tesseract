@@ -23,11 +23,12 @@ namespace Tesseract.Core.Logic.Implementation
         private readonly IJobStore _jobStore;
         private readonly IServiceProvider _serviceProvider;
 
-        public DefaultJobLogic(IJobStore jobStore, IJobManager jobManager, ICurrentTenantLogic tenantLogic)
+        public DefaultJobLogic(IJobStore jobStore, IJobManager jobManager, ICurrentTenantLogic tenantLogic, IServiceProvider serviceProvider)
         {
             _tenant = tenantLogic;
             _jobManager = jobManager;
             _jobStore = jobStore;
+            _serviceProvider = serviceProvider;
         }
 
         public async Task<List<JobData>> LoadAllJobs()

@@ -27,7 +27,7 @@ namespace Tesseract.Common.Results
 
         public T Result { get; set; }
 
-        public static ApiValidatedResult<T> Ok()
+        public static  new ApiValidatedResult<T> Ok()
         {
             return new ApiValidatedResult<T>();
         }
@@ -37,14 +37,14 @@ namespace Tesseract.Common.Results
             return new ApiValidatedResult<T>(result);
         }
 
-        public static ApiValidatedResult<T> Failure()
+        public static new ApiValidatedResult<T> Failure()
         {
             var apiValidatedResult = new ApiValidatedResult<T>();
             apiValidatedResult.Success = false;
             return apiValidatedResult;
         }
 
-        public static ApiValidatedResult<T> Failure(ApiValidationError error)
+        public static new ApiValidatedResult<T> Failure(ApiValidationError error)
         {
             if (error == null)
             {
@@ -54,7 +54,7 @@ namespace Tesseract.Common.Results
             return new ApiValidatedResult<T>(error);
         }
 
-        public static ApiValidatedResult<T> Failure(IEnumerable<ApiValidationError> errors)
+        public static new ApiValidatedResult<T> Failure(IEnumerable<ApiValidationError> errors)
         {
             if (errors == null)
             {
@@ -64,7 +64,7 @@ namespace Tesseract.Common.Results
             return new ApiValidatedResult<T>(errors);
         }
 
-        public static ApiValidatedResult<T> Failure(string errorKey)
+        public static new ApiValidatedResult<T> Failure(string errorKey)
         {
             if (errorKey.IsNullOrWhitespace())
             {
@@ -74,7 +74,7 @@ namespace Tesseract.Common.Results
             return Failure(new ApiValidationError(errorKey));
         }
 
-        public static ApiValidatedResult<T> Failure(string errorKey, IEnumerable<string> errorParameters)
+        public static new ApiValidatedResult<T> Failure(string errorKey, IEnumerable<string> errorParameters)
         {
             if (errorKey.IsNullOrWhitespace())
             {
@@ -84,7 +84,7 @@ namespace Tesseract.Common.Results
             return Failure(new ApiValidationError(errorKey, errorParameters));
         }
 
-        public static ApiValidatedResult<T> Failure(string propertyPath, string errorKey)
+        public static new ApiValidatedResult<T> Failure(string propertyPath, string errorKey)
         {
             if (errorKey.IsNullOrWhitespace())
             {
@@ -94,7 +94,7 @@ namespace Tesseract.Common.Results
             return Failure(new ApiValidationError(propertyPath, errorKey));
         }
 
-        public static ApiValidatedResult<T> Failure(string propertyPath, string errorKey,
+        public static new ApiValidatedResult<T> Failure(string propertyPath, string errorKey,
             IEnumerable<string> errorParameters)
         {
             if (errorKey.IsNullOrWhitespace())
@@ -105,7 +105,7 @@ namespace Tesseract.Common.Results
             return Failure(new ApiValidationError(propertyPath, errorKey, errorParameters));
         }
 
-        public static ApiValidatedResult<T> Aggregate(params ApiValidationError[] errors)
+        public static new ApiValidatedResult<T> Aggregate(params ApiValidationError[] errors)
         {
             if (errors == null)
             {
@@ -117,7 +117,7 @@ namespace Tesseract.Common.Results
             return result;
         }
 
-        public static ApiValidatedResult<T> Aggregate(params ApiValidationResult[] results)
+        public static new ApiValidatedResult<T> Aggregate(params ApiValidationResult[] results)
         {
             if (results == null)
             {

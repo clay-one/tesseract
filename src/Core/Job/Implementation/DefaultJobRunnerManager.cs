@@ -167,6 +167,7 @@ namespace Tesseract.Core.Job.Implementation
 
         private async Task RestartRunner(string jobId)
         {
+            await Task.CompletedTask;
             // TODO
         }
 

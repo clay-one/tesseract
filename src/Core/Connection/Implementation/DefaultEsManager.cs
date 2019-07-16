@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Elasticsearch.Net;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Nest;
 using Tesseract.Core.Index;
@@ -18,7 +19,7 @@ namespace Tesseract.Core.Connection.Implementation
         private readonly IFieldDefinitionStore _fieldDefinitionStore;
 
         private readonly ITagNsDefinitionStore _tagNsDefinitionStore;
-
+        private readonly ILogger<DefaultEsManager> _logger;
         private readonly IConnectionPool _connectionPool;
 
         private readonly string _indexNamePrefix;
@@ -27,11 +28,12 @@ namespace Tesseract.Core.Connection.Implementation
 
         public DefaultEsManager(IFieldDefinitionStore fieldDefinitionStore,
             ITagNsDefinitionStore tagNsDefinitionStore,
-            IOptions<ElasticsearchConfig> options)
+            IOptions<ElasticsearchConfig> options,
+            ILogger<DefaultEsManager> logger)
         {
             _fieldDefinitionStore = fieldDefinitionStore;
             _tagNsDefinitionStore = tagNsDefinitionStore;
-
+            _logger = logger;
             _indexNamePrefix = options.Value.IndexNamePrefix;
             var uris = options.Value.Uris.Select(u => new Uri(u));
 
@@ -71,13 +73,13 @@ namespace Tesseract.Core.Connection.Implementation
 
         public async Task DeleteTenantIndex(string tenantId)
         {
-            var exists = await Client.IndexExistsAsync(GetTenantIndexName(tenantId));
+            var exists = await Client.Indices.ExistsAsync(GetTenantIndexName(tenantId)); ;
             if (!exists.Exists)
             {
                 return;
             }
 
-            await Client.DeleteIndexAsync(GetTenantIndexName(tenantId));
+            await Client.Indices.DeleteAsync(GetTenantIndexName(tenantId));
         }
 
         public async Task CreateTenantIndex(string tenantId)
@@ -88,21 +90,25 @@ namespace Tesseract.Core.Connection.Implementation
                 [IndexNaming.CreationTimeFieldName] = new NumberProperty(NumberType.Integer)
             };
 
-            await Client.CreateIndexAsync(new CreateIndexRequest(GetTenantIndexName(tenantId), new IndexState
+            await Client.Indices.CreateAsync(new CreateIndexRequest(GetTenantIndexName(tenantId), new IndexState
             {
-                Mappings = new Mappings
+                //Mappings = new Mappings
+                //{
+                //    [typeof(AccountIndexModel)] = new TypeMapping
+                //    {
+                //        Properties = properties
+                //    }
+                //}
+                Mappings = new TypeMapping()
                 {
-                    [typeof(AccountIndexModel)] = new TypeMapping
-                    {
-                        Properties = properties
-                    }
+                    Properties = properties
                 }
             }));
         }
 
         public async Task EnsureTenantIndex(string tenantId)
         {
-            var exists = await Client.IndexExistsAsync(GetTenantIndexName(tenantId));
+            var exists = await Client.Indices.ExistsAsync(GetTenantIndexName(tenantId));
             if (!exists.Exists)
             {
                 await CreateTenantIndex(tenantId);
@@ -113,9 +119,9 @@ namespace Tesseract.Core.Connection.Implementation
 
         public async Task EnsureIndexTagNsAndFieldMappings(string tenantId)
         {
-            var mappings =
-                await Client.GetMappingAsync(new GetMappingRequest(GetTenantIndexName(tenantId),
-                    typeof(AccountIndexModel)));
+            var mappings = await Client.Indices
+                .GetMappingAsync(new GetMappingRequest(GetTenantIndexName(tenantId)));
+            //.GetMappingAsync(new GetMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel)));
 
             var nsList = await _tagNsDefinitionStore.LoadAll(tenantId);
             foreach (var ns in nsList)
@@ -150,20 +156,30 @@ namespace Tesseract.Core.Connection.Implementation
 
         public async Task SetTagNsMapping(string tenantId, string ns)
         {
-            await Client.MapAsync(
-                new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+            try
+            {
+                await Client.MapAsync(
+                //new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                new PutMappingRequest(GetTenantIndexName(tenantId))
                 {
                     Properties = new Properties
                     {
                         [IndexNaming.Namespace(ns)] = new TextProperty { Analyzer = "whitespace" }
                     }
                 });
+            }
+            catch (Exception e)
+            {
+                _logger.LogCritical(e, e.ToString());
+                throw;
+            }
         }
 
         public async Task SetFieldMapping(string tenantId, string fieldName)
         {
             await Client.MapAsync(
-                new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                //new PutMappingRequest(GetTenantIndexName(tenantId), typeof(AccountIndexModel))
+                new PutMappingRequest(GetTenantIndexName(tenantId))
                 {
                     Properties = new Properties
                     {

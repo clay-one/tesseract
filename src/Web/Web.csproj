@@ -15,9 +15,27 @@
       <NoWarn>NU1602,NU1604</NoWarn>
     </PackageReference>
 
-    <PackageReference Include="NLog.Web.AspNetCore" Version="4.5.0-rc2" />
+    <PackageReference Include="NLog" Version="4.6.6" />
+    <PackageReference Include="NLog.Web.AspNetCore" Version="4.8.4" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Core\Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Update="appsettings.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.Development.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="appsettings.Production.json">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="nlog.Development.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Update="nlog.Production.config">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 </Project>
