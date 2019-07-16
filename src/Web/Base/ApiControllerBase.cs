@@ -5,6 +5,7 @@ using Tesseract.Common.Results;
 
 namespace Appson.Tesseract.Web.Base
 {
+    [Route("api")]
     public abstract class ApiControllerBase : ControllerBase
     {
         protected IActionResult NotImplemented()

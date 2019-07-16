@@ -7,8 +7,10 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using NLog.Web;
 using Tesseract.Core;
-using Tesseract.Web.CorrelationId;
+using Tesseract.Core.Logic;
+using Tesseract.Core.MultiTenancy;
 
 namespace Tesseract.Web
 {
@@ -16,12 +18,13 @@ namespace Tesseract.Web
     {
         private readonly ILogger<Startup> _logger;
 
-        public IConfigurationRoot Configuration { get; }
+        public IConfiguration Configuration { get; }
 
-        public Startup(ILogger<Startup> logger, IConfigurationRoot configuration)
+        public Startup(ILogger<Startup> logger, IConfiguration configuration, IHostingEnvironment environment)
         {
             _logger = logger;
             Configuration = configuration;
+            environment.ConfigureNLog($"nlog.{environment.EnvironmentName}.config");
         }
 
         // This method gets called by the runtime. Use this method to add services to the container.
@@ -41,7 +44,6 @@ namespace Tesseract.Web
                 services.Configure<RedisConfig>(Configuration.GetSection("Redis"));
                 services.Configure<ElasticsearchConfig>(Configuration.GetSection("Elasticsearch"));
 
-                services.AddCorrelationId();
                 services.AddTesseractCoreServices();
             }
             catch (Exception e)
@@ -56,9 +58,32 @@ namespace Tesseract.Web
         {
             try
             {
-                app.UseCorrelationId(new CorrelationIdOptions { IncludeInResponse = false });
-                app.UseMvc();
-                app.Run(async context => { await context.Response.WriteAsync($"Tesseract ({env.EnvironmentName}) is up and running!"); });
+                //app.UseCorrelationId(new CorrelationIdOptions { IncludeInResponse = false });
+                app
+                    .Use(async (ctx, next) =>
+                    {
+                        //var factory = ctx.RequestServices.GetService<ITenantContextFactory>();
+                        //factory.Create();
+
+                        var tca = ctx.RequestServices.GetService<ITenantContextAccessor>();
+                        tca.TenantContext = new TenantContext(new Core.Context.TenantContextInfo("fanap-plus"));
+
+                        await next();
+
+                        // todo: maybe assing NULL to TenantContextAccessor's TenantContext?
+                    })
+                    .Use(async (ctx, next) =>
+                    {
+                        var srv = ctx.RequestServices.GetService<ICurrentTenantLogic>();
+                        await srv.PopulateInfo();
+
+                        await next();
+                    })
+                    .UseMvc()
+                    .Run(async context =>
+                    {
+                        await context.Response.WriteAsync($"Tesseract ({env.EnvironmentName}) is up and running!");
+                    });
             }
             catch (Exception e)
             {

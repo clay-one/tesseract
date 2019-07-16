@@ -12,6 +12,7 @@ using Tesseract.Core.JobTypes.FetchFromIndex;
 using Tesseract.Core.JobTypes.HttpPush;
 using Tesseract.Core.Logic;
 using Tesseract.Core.Logic.Implementation;
+using Tesseract.Core.MultiTenancy;
 using Tesseract.Core.Queue;
 using Tesseract.Core.Queue.Implementation;
 using Tesseract.Core.Storage;
@@ -63,10 +64,9 @@ namespace Tesseract.Core
             serviceCollection.AddTransient<FaultyJobRunner>();
 
             serviceCollection.AddSingleton(typeof(IJobQueue<>), typeof(RedisJobQueue<>));
-            serviceCollection.AddSingleton(typeof(IJobRunner), typeof(JobRunner<>));
+            serviceCollection.AddSingleton(typeof(IJobRunner<>), typeof(JobRunner<>));
 
-            // TODO: register IJobQueue<AccountIndexingStep>
-            // TODO: register IJobQueue<FetchForReindexStep>
+            serviceCollection.AddMultiTenancyServices();
 
         }
     }
