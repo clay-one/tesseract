@@ -9,6 +9,7 @@ using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
 using NLog.Web;
 using Tesseract.Core;
+using Tesseract.Core.Connection;
 using Tesseract.Core.Logic;
 using Tesseract.Core.MultiTenancy;
 
@@ -54,10 +55,13 @@ namespace Tesseract.Web
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IEsManager esManager)
         {
             try
             {
+                esManager.EnsureTenantIndex("fanap-plus")
+                    .GetAwaiter()
+                    .GetResult();
                 //app.UseCorrelationId(new CorrelationIdOptions { IncludeInResponse = false });
                 app
                     .Use(async (ctx, next) =>
