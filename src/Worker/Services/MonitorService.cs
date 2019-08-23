@@ -19,7 +19,7 @@ namespace Tesseract.Worker.Services
         public Task StartAsync(CancellationToken cancellationToken)
         {
             _logger.LogInformation("Timed Background Service is starting.");
-            _timer = new Timer(CheckRunnersHealth, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+            _timer = new Timer(CheckRunnersHealth, null, TimeSpan.Zero, TimeSpan.FromMinutes(1));
             return Task.CompletedTask;
         }
 
