@@ -41,7 +41,14 @@ namespace Tesseract.Worker
                 })
                 .ConfigureServices((hostBuilderContext, serviceCollection) =>
                 {
+                    var configuration = hostBuilderContext.Configuration;
+
+                    serviceCollection.Configure<MongoDbConfig>(configuration.GetSection("MongoDb"));
+                    serviceCollection.Configure<RedisConfig>(configuration.GetSection("Redis"));
+                    serviceCollection.Configure<ElasticsearchConfig>(configuration.GetSection("Elasticsearch"));
+
                     serviceCollection.AddTesseractCoreServices();
+                    serviceCollection.AddHostedService<WorkerService>();
                     serviceCollection.AddHostedService<MonitorService>();
                 })
                 .ConfigureLogging((hostBuilderContext, loggingBuilder) =>
