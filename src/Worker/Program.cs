@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace Worker
+namespace Tesseract.Worker
 {
-    class Program
+    internal class Program
     {
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Console.WriteLine("Hello World!");
         }
